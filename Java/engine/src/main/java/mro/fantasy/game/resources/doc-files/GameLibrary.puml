@@ -1,0 +1,27 @@
+@startuml
+!theme spacelab
+skinparam BackgroundColor #2B2B2B
+skinparam linetype ortho
+
+
+class GameLibrary << (S,#00AA00) Service >> {
+}
+
+class TileLibrary << (S,#00AA00) Service >> {
+}
+
+class PlanLibrary << (S,#00AA00) Service >> {
+}
+
+interface ResourceLibrary<T extends GameResource> <<Interface>> {
+
+}
+
+
+GameLibrary --* TileLibrary : aggregates
+GameLibrary --* PlanLibrary : aggregates
+PlanLibrary --o ResourceLibrary : implements
+TileLibrary --o ResourceLibrary : implements
+
+
+@enduml

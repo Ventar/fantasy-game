@@ -1,0 +1,40 @@
+bundleName: Base Game
+resources:
+  - id: BGC001
+    name: Riskar
+    audioBundleName: Tile Base Game
+    audioKey: character.base.game.001
+    description: Half Giant Paladin of Water
+    size: 1x1
+    attributes:
+      - datatype: STRENGTH            # Weapon heavy, Health Bonus
+        value: 4
+      - datatype: STRENGTH            # Armor, Endurance Bonus
+        value: 5
+      - datatype: AGILITY             # Weapon light, Bows, Throwing
+        value: 3
+      - datatype: INTELLIGENCE        # Magic
+        value: 1
+      - datatype: CHARISMA            # Fellows, Animals, Dialogs
+        value: 1
+      - datatype: WISDOM              # Divine
+        value: 2
+      - datatype: MOVEMENT            # number of fields the character can move
+        value: 2
+      - datatype: HEALTH              # hit points of an character
+        value: 10
+      - datatype: ENDURANCE           # energy to execute endurance based skills
+        value: 2
+      - datatype: ATTACK              # chance to hit
+        value: 60
+      - datatype: DEFENCE             # chance to defend an attack
+        value: 10
+      - datatype: ARMOR               # armor to reduce damage
+        value: 0
+      - datatype: DODGE               # chance to dodge an attack
+        value: 5
+      - datatype: CRITICAL            # chance to perform a critical hit.
+        value: 5
+      - datatype: LIMIT_BACKPACK      # how many items a character can take with him (beside the equipped stuff)
+        value: 5
+

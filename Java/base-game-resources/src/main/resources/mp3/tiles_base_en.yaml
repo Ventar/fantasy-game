@@ -1,0 +1,15 @@
+bundleName: Tile Base Game
+locale: en
+resources:
+- key: tiles.base.game.001
+  hash: 0318ab3ac4ce10359cf555c1ef03a21787415e24c9be36d9800f4b5895094c11
+  ssml: |-
+    <speak>
+     <prosody rate="85%">BG <say-as interpret-as="digits">001</say-as></prosody>
+    </speak>
+- key: tiles.base.game.002
+  hash: 6e2b4e88e9e8a943a412358a2f988e31c27ed7927af4573f39ecf4e7d9e4a322
+  ssml: |-
+    <speak>
+     <prosody rate="85%">BG <say-as interpret-as="digits">002</say-as></prosody>
+    </speak>

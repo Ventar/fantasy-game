@@ -1,0 +1,29 @@
+.idea/
+.settings/
+.project
+.classpath
+
+./stl-cha
+
+**/target/
+**/.idea/
+**/.vscode/
+*.iml
+aws.config
+
+
+# Visual Studio Code settings
+# We do not commit settings.json to allow individual settings
+# Copy .vscode/settings.json.template to settings.json and customize as needed
+.vscode/*
+!.vscode/settings.json.template
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/tasks.json
+*.code-workspace
+# Local History for Visual Studio Code
+.history/
+
+.DS_Store
+admin/.DS_Store
+/.metadata/

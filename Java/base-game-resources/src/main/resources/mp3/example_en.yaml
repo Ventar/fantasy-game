@@ -1,0 +1,23 @@
+bundleName: Example
+locale: en
+resources:
+- key: welcome
+  hash: cc9a133777a0c1df67d154ef46d650bee3befa9bfcba801b3479711586dda442
+  ssml: |-
+    <speak>
+     Welcome {}, this is your first interaction with the audio communication service.
+    </speak>
+- key: game.name
+  hash: 49a577f7ff4929c9ef4c86586b44419fbf7d78c0b75a8b4afa56f0973a39531a
+  ssml: |-
+    <speak>
+     War of Elements
+    </speak>
+- key: intro
+  hash: b83f53d9ae2d59cb44bbbff4c4a7503f28f70c3d04751ac7b288febfa9903401
+  ssml: |-
+    <speak>
+     Welcome to
+     'War of Elements'
+     the electronic board game.
+    </speak>

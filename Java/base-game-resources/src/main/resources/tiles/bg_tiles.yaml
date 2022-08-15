@@ -1,0 +1,178 @@
+# Tile bundle of the base game.
+# Legend:
+# ─────────────────────────────────────────────
+#   ░  - blocks line of sight
+#   ▓  - block as movement
+#   █  - blocks movement and line of sight
+#   0° - anchor of the tile
+#        (with the rotation 0°, 90° , 180°, 270°
+#   -  - character
+#   x  - plan field without an assigned tile
+#   .  - marker
+# ─────────────────────────────────────────────
+
+bundleName: Base Game
+resources: # <- change to resources to make it generic
+
+  #     ┌─────────┬─────────┐
+  #     │         │         │
+  #     │   1/0   │   1/1   │
+  #     │         │         │
+  #     ├─────────┼─────────┤
+  #     │         │         │
+  #     │   0/0   │   1/0   │
+  #     │ 0°      │         │
+  #     └─────────┴─────────┘
+  - id: BGT001
+    type: DUNGEON_FLOOR
+    name: Default Floor 2x2
+    description: basic dungeon floor
+    audioBundleName: Tile Base Game
+    audioKey: tiles.base.game.001
+    sizeColumns: 2
+    sizeRows: 2
+    fields:
+      - column: 0
+        row: 0
+        los: false
+        move: false
+        enter: true
+      - column: 1
+        row: 0
+        los: false
+        move: false
+        enter: true
+      - column: 0
+        row: 1
+        los: false
+        move: false
+        enter: true
+      - column: 1
+        row: 1
+        los: false
+        move: false
+        enter: true
+
+  #     ┌─────────┬─────────┐
+  #     │         │ ███████ │
+  #     │   1/0   │ SCENIC  │
+  #     │         │ ███████ │
+  #     ├─────────┼─────────┤
+  #     │         │         │
+  #     │   0/0   │   1/0   │
+  #     │ 0°      │         │
+  #     └─────────┴─────────┘
+  - id: BGT002
+    type: DUNGEON_FLOOR
+    name: Flame Pillar 2x2
+    description: dungeon floor with a large flame pillar
+    audioBundleName: Tile Base Game
+    audioKey: tiles.base.game.002
+    sizeColumns: 2
+    sizeRows: 2
+    fields:
+      - column: 0
+        row: 0
+        los: false
+        move: false
+        enter: true
+      - column: 1
+        row: 0
+        los: false
+        move: false
+        enter: true
+      - column: 0
+        row: 1
+        los: false
+        move: false
+        enter: true
+      - column: 1
+        row: 1
+        los: true
+        move: true
+        enter: false
+
+  #     ┌─────────┬─────────┐
+  #     │ ███████ │ ███████ │
+  #     │   0/0   │   1/0   │
+  #     │ 0° ████ │ ███████ │
+  #     └─────────┴─────────┘
+  - id: BGT003
+    type: SCENIC
+    name: Weapon Rack 2x1
+    description: scenery tile with some weapon racks
+    audioBundleName: Tile Base Game
+    audioKey: tiles.base.game.003
+    sizeColumns: 2
+    sizeRows: 1
+    fields:
+      - column: 0
+        row: 0
+        los: false
+        move: true
+        enter: false
+      - column: 1
+        row: 0
+        los: false
+        move: true
+        enter: false
+
+  #     ┌─────────┐
+  #     │ ███████ │
+  #     │   0/0   │
+  #     │ 0° ████ │
+  #     └─────────┘
+  - id: BGT004
+    type: SCENIC
+    name: Chest 1x1
+    description: scenery tile with a small closed chest
+    audioBundleName: Tile Base Game
+    audioKey: tiles.base.game.004
+    sizeColumns: 1
+    sizeRows: 1
+    fields:
+      - column: 0
+        row: 0
+        los: false
+        move: true
+        enter: false
+
+  #     ┌─────────┐
+  #     │ ███████ │
+  #     │   0/0   │
+  #     │ 0° ████ │
+  #     └─────────┘
+  - id: BGT005
+    type: PLAYER
+    name: Player 1x1
+    description: tile with a player character
+    audioBundleName: Tile Base Game
+    audioKey: tiles.base.game.005
+    sizeColumns: 1
+    sizeRows: 1
+    fields:
+      - column: 0
+        row: 0
+        los: false
+        move: true
+        enter: false
+
+  #     ┌─────────┐
+  #     │ ███████ │
+  #     │   0/0   │
+  #     │ 0° ████ │
+  #     └─────────┘
+  - id: BGT006
+    type: ENEMY
+    name: Enemy 1x1
+    description: tile with an enemy character
+    audioBundleName: Tile Base Game
+    audioKey: tiles.base.game.006
+    sizeColumns: 1
+    sizeRows: 1
+    fields:
+      - column: 0
+        row: 0
+        los: false
+        move: true
+        enter: false

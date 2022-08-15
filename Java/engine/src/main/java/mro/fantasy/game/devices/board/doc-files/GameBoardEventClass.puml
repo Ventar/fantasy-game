@@ -1,0 +1,86 @@
+'https://plantuml.com/class-diagram
+
+@startuml
+!theme spacelab
+skinparam backgroundColor #333333
+
+interface DeviceEventHandler << Interface >>{
+    + handle(DeviceDataPackage)
+}
+
+interface GameBoard << Interface >> {
+    + handle(DeviceDataPackage)
+}
+
+class GameBoardImpl << (C,#00AA00) Component >> {
+
+}
+
+class DeviceEventService << (S,#00AA00) Service >> {}
+
+
+interface GameEventProducer << Interface >> {
+ + addListener(Listener)
+ + removeListener(Listener)
+ + waitForEvent()
+}
+
+interface GameBoardEventListener << Interface >> {
+ + onGameBoardEvent(GameBoardEvent event)
+}
+
+class GameBoardEvent << (R,#5577AA) Record >>{
+  + board: GameBoard
+  + updatedFields: List<FieldUpdate>
+}
+
+class FieldUpdate << (R,#5577AA) Record >>{
+  + column: int
+  + row: int
+  + northEnabled : bool
+  + eastEnabled : bool
+  + southEnabled : bool
+  + westEnabled : bool
+}
+
+class DeviceDataPackage {
+ - raw: byte[]
+ - data: byte[]
+ - deviceType: DeviceType
+ - deviceId: String
+ - eventId: int
+ + getData()
+ + getDeviceType()
+ + getDeviceId()
+ + getEventId()
+ + handle(DeviceDataPackage)
+}
+
+abstract AbstractDeviceEventComponent<GameBoard> {
+ + {abstract} createEvent(DeviceDataPackage)
+ + addListener(Listener)
+ + removeListener(Listener)
+ + waitForEvent()
+}
+
+enum DeviceType {
+ SERVER
+ BOARD_MODULE
+ PLAYER_CONTROLLER
+}
+
+DeviceDataPackage .. DeviceType
+DeviceEventService --*  DeviceEventHandler : [3] triggers handle()
+DeviceEventService -. DeviceDataPackage : [2] creates
+DatagramPacket . DeviceEventService : [1] is received by
+GameBoardImpl --|> AbstractDeviceEventComponent
+AbstractDeviceEventComponent --|> GameBoard
+GameBoard --|> GameEventProducer
+GameBoard --|> DeviceEventHandler
+GameBoardEventListener .. GameBoardEvent
+GameBoardEvent .. FieldUpdate
+AbstractDeviceEventComponent --* GameBoardEventListener : [4] onGameBoardEvent()
+
+
+
+@enduml

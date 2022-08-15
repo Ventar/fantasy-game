@@ -1,0 +1,32 @@
+<configuration>
+  
+  <!-- ################################################################################# -->
+  <!-- APPENDER Configuration -->
+  <!-- ################################################################################# -->
+  
+  <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+      <pattern>%d{HH:mm:ss.SSS} [%-10.10t] %-5level %-40.40logger - %msg%n</pattern>
+    </encoder>
+  </appender>
+  
+  <!-- ################################################################################# -->
+  <!-- LOGGER Configuration -->
+  <!-- ################################################################################# -->
+  
+  <logger name="javax.jmdns" level="INFO"/>
+  <logger name="org.apache.http" level="INFO"/>
+  <logger name="org.springframework.boot.autoconfigure.logging" level="INFO"/>
+  
+  <logger name="mro" level="TRACE"/>
+  <logger name="mro.fantasy.game.devices.board.GameBoard" level="DEBUG"/>
+  <logger name="mro.fantasy.game.devices.AbstractDevice" level="DEBUG"/>
+  <logger name="mro.fantasy.game.communication.resources.AbstractCommunicationService" level="DEBUG"/>
+  <logger name="mro.fantasy.game.engine.movement.MovementService" level="DEBUG"/>
+  <logger name="mro.fantasy.game.engine.los.LineOfSightService" level="DEBUG"/>
+  
+  <root>
+    <appender-ref ref="CONSOLE"/>
+  </root>
+
+</configuration>

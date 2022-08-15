@@ -1,0 +1,33 @@
+@startuml
+!theme spacelab
+skinparam BackgroundColor #2B2B2B
+skinparam linetype ortho
+
+
+interface GameResource << Interface >> {
+    + getName(): String
+    + getDescription(): String
+    + getGameId(): String
+    + loadFromYAML(GameLibrary, Map<String, Object>) : void
+}
+
+interface ResourceBundle<T extends GameResource> << Interface >> {
+    + getById(String) : T
+    + getAll() : List<T>
+    + loadResources(Function<..>) : void
+}
+
+interface ResourceBundleProvider<R extends GameResource,\n T extends ResourceBundle<R>> << Interface >> {
+   + getResourceBundles(): List<T>
+}
+interface ResourceLibrary<T extends GameResource> <<Interface>> {
+
+}
+
+
+ResourceBundle --> GameResource : loads
+ResourceBundleProvider --* ResourceBundle : @Autowired
+ResourceLibrary --o ResourceBundle : implements
+ResourceLibrary --* ResourceBundleProvider : @Autowired
+
+@enduml

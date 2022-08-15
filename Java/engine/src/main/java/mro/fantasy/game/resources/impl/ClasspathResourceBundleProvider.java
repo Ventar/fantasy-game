@@ -1,0 +1,122 @@
+package mro.fantasy.game.resources.impl;
+
+import mro.fantasy.game.resources.GameResource;
+import mro.fantasy.game.resources.ResourceBundle;
+import mro.fantasy.game.resources.ResourceBundleProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+
+import javax.annotation.PostConstruct;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+/**
+ * Utility class that scans the Java classpath for YAML files and convert them to Java classes.
+ *
+ * @param <T> the type of the content
+ *
+ * @author Michael Rodenbuecher
+ * @since 2022-08-04
+ */
+public class ClasspathResourceBundleProvider<R extends GameResource, T extends ResourceBundle<R>> implements ResourceBundleProvider<R, T> {
+
+    /**
+     * Logger
+     */
+    private static final Logger LOG = LoggerFactory.getLogger(ClasspathResourceBundleProvider.class);
+
+    /**
+     * The list of resource file content.
+     */
+    private List<T> resourceFileContent;
+
+    /**
+     * The function that is used to build the content instance.
+     */
+    private Function<Resource, T> builder;
+
+    /**
+     * The directory in the classpath that is scanned for YAML files.
+     */
+    private String directory;
+
+    /**
+     * Creates a new provider that scans the passed directory for yaml files and tries to resolve them.
+     *
+     * @param directory the directory to scan
+     * @param builder   the function that is used to build the data class <T> instance.
+     */
+    public ClasspathResourceBundleProvider(String directory, Function<Resource, T> builder) {
+        this.directory = directory;
+        this.builder = builder;
+    }
+
+    /**
+     * Creates a new {@link ClasspathResourceBundleProvider} that creates {@link DefaultResourceBundle} from the passed directory.
+     *
+     * @param directory        the directory to scan
+     * @param resourceFunction the function to create the actual resource from the YAML file
+     *
+     * @return the provider
+     */
+    public static ClasspathResourceBundleProvider forDefaultResourceBundle(String directory) {
+        return new ClasspathResourceBundleProvider(directory, (res) -> new DefaultResourceBundle((Resource) res));
+    }
+
+    @PostConstruct
+    private void postConstruct() {
+
+        LOG.debug("");
+        LOG.debug("----------------------------------------------------------------------------");
+        LOG.debug("Initialize Resource Provider for directory ::= [{}]",directory);
+        LOG.debug("----------------------------------------------------------------------------");
+
+        PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+        Resource[] resources;
+
+        try {
+            resources = resolver.getResources("classpath*:/" + directory + "/*.yaml");
+        } catch (IOException e) {
+            LOG.error("Could not fetch tile bundles: ", e);
+            return;
+        }
+
+        LOG.debug("Found ::= [{}] potential YAML files in path ::= [{}]", resources.length, directory);
+
+        this.resourceFileContent = Arrays                                                                 // try to create tile bundles for every YAML file
+                .stream(resources)
+                .map(res -> {
+                    try {
+                        LOG.debug("Try to create resource bundle from :.= [{}]", res.getURL().getFile());
+                        return builder.apply(res);
+                    } catch (Exception e) {
+                        if (LOG.isTraceEnabled()) {                                                       // on TRACE we will print the complete stacktrace but for all other
+                            LOG.warn("Could not load resource bundle: ", e);                              // log levels, only the message is shown in a warning.
+                        } else {
+                            LOG.warn("Could not create resource bundle (enable TRACE for more information): ", e.getMessage());
+                        }
+                        return null;
+                    }
+                })
+                .filter(res -> res != null)                                                               // in case of an exception the YAML file is ignored
+                .collect(Collectors.toList());
+
+        LOG.debug("");
+        LOG.debug("Initialization of resource provider for directory ::= [{}] DONE", directory);
+        LOG.debug("----------------------------------------------------------------------------");
+        LOG.debug("");
+
+    }
+
+    @Override
+    public List<T> getResourceBundles() {
+        return Collections.unmodifiableList(resourceFileContent);
+    }
+
+}

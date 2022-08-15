@@ -1,0 +1,21 @@
+bundleName: Character Names
+locale: en
+resources:
+- key: riskar
+  hash: a978ea1f81c34b43ac858853ba57656afeb95b75d8bb0892d44d2a5885f51b77
+  ssml: |-
+    <speak>
+     Riskar
+    </speak>
+- key: lyra
+  hash: 9529302e042ed2a0253d3f3199ca8a2d92e8f0d0f45c1e8110ec52f4c64e869f
+  ssml: |-
+    <speak>
+     Lyra
+    </speak>
+- key: torg
+  hash: 8bbad0545e9417521ec15249742ef76566a41530c1173ab0809bfb793be23b29
+  ssml: |-
+    <speak>
+     Torg
+    </speak>
