@@ -14,40 +14,49 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
   
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>exec-maven-plugin</artifactId>
-        <version>3.1.0</version>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>java</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <mainClass>mro.fantasy.game.engine.communication.impl.AudioResourceFileManager</mainClass>
-          <arguments>
-            <argument>${project.basedir}/src/main/resources/mp3/tiles_base_en.yaml</argument>
-            <argument>${project.basedir}/src/main/resources/mp3/character_names_en.yaml</argument>
-            <argument>${project.basedir}/src/main/resources/mp3/example_en.yaml</argument>
-          </arguments>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
+  <profiles>
+    <profile>
+      <id>develop</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+    </profile>
+    <profile>
+      <id>speech</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <version>3.1.0</version>
+            <executions>
+              <execution>
+                <phase>package</phase>
+                <goals>
+                  <goal>java</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <mainClass>mro.fantasy.game.engine.communication.impl.AudioResourceFileManager</mainClass>
+              <arguments>
+                <argument>${project.basedir}/src/main/resources/mp3/tiles_base_en.yaml</argument>
+                <argument>${project.basedir}/src/main/resources/mp3/character_names_en.yaml</argument>
+                <argument>${project.basedir}/src/main/resources/mp3/example_en.yaml</argument>
+              </arguments>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
   
   <dependencies>
-    
     <dependency>
       <groupId>mro.fantasy.game</groupId>
       <artifactId>engine</artifactId>
       <version>${project.version}</version>
     </dependency>
-
   </dependencies>
 
 </project>
