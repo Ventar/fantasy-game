@@ -1,13 +1,13 @@
 package mro.fantasy.game.engine;
 
-import mro.fantasy.game.engine.plan.Plan;
-import mro.fantasy.game.engine.plan.TileTemplate;
+import mro.fantasy.game.plan.Plan;
+import mro.fantasy.game.plan.TileTemplate;
 import mro.fantasy.game.resources.GameResource;
 import mro.fantasy.game.resources.ResourceLibrary;
-import mro.fantasy.game.engine.plan.PlanLibrary;
-import mro.fantasy.game.engine.plan.TileLibrary;
-import mro.fantasy.game.engine.plan.impl.PlanImpl;
-import mro.fantasy.game.engine.plan.impl.TileTemplateImpl;
+import mro.fantasy.game.plan.PlanLibrary;
+import mro.fantasy.game.plan.TileLibrary;
+import mro.fantasy.game.plan.impl.PlanImpl;
+import mro.fantasy.game.plan.impl.TileTemplateImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

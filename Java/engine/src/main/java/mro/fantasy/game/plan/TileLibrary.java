@@ -1,14 +1,16 @@
-package mro.fantasy.game.engine.character;
+package mro.fantasy.game.plan;
 
 import mro.fantasy.game.resources.impl.DefaultResourceLibrary;
+import org.springframework.stereotype.Component;
 
 /**
  * Marker class to make the handling of the generic resource library easier.
  *
  * @author Michael Rodenbuecher
- * @since 2022-08-06
+ * @since 2022-08-05
  */
-public class CharacterLibrary extends DefaultResourceLibrary<Character> {
+@Component
+public class TileLibrary extends DefaultResourceLibrary<TileTemplate> {
 
 
 }

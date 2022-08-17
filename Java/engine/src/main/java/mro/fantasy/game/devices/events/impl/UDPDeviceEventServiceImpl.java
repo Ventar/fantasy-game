@@ -89,15 +89,10 @@ public class UDPDeviceEventServiceImpl extends Thread implements DeviceEventServ
 
                 executor.execute(() -> {
                     try {
-
                         DeviceDataPackage dataPackage = new DeviceDataPackage(packet.getData());
-
                         LOG.debug("Received device event ::= [{}]", dataPackage);
 
-                        eventHandler.forEach((handler) -> {    // offer the event to all registered event handler.
-                            handler.handle(dataPackage);
-                        });
-
+                        eventHandler.forEach(handler -> handler.handle(dataPackage));    // offer the event to all registered event handler.
                     } catch (Exception e) {
                         LOG.debug("Error during processing of UDP event: ", e);
                     }

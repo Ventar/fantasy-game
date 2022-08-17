@@ -1,7 +1,7 @@
 package mro.fantasy.game.resources;
 
 import mro.fantasy.game.engine.character.equpipment.impl.EquipmentImpl;
-import mro.fantasy.game.engine.plan.Plan;
+import mro.fantasy.game.plan.Plan;
 import mro.fantasy.game.resources.impl.ClasspathResourceBundleProvider;
 
 import java.util.List;

@@ -38,7 +38,7 @@
               </execution>
             </executions>
             <configuration>
-              <mainClass>mro.fantasy.game.engine.communication.impl.AudioResourceFileManager</mainClass>
+              <mainClass>mro.fantasy.game.communication.impl.AudioResourceFileManager</mainClass>
               <arguments>
                 <argument>${project.basedir}/src/main/resources/mp3/tiles_base_en.yaml</argument>
                 <argument>${project.basedir}/src/main/resources/mp3/character_names_en.yaml</argument>

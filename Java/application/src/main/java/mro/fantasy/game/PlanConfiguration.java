@@ -1,10 +1,10 @@
 package mro.fantasy.game;
 
-import mro.fantasy.game.engine.communication.data.AudioResource;
-import mro.fantasy.game.engine.communication.data.AudioResourceBundle;
-import mro.fantasy.game.engine.communication.impl.AudioResourceMP3FileResolver;
-import mro.fantasy.game.engine.plan.Plan;
-import mro.fantasy.game.engine.plan.TileTemplate;
+import mro.fantasy.game.communication.impl.AudioResource;
+import mro.fantasy.game.communication.impl.AudioResourceBundle;
+import mro.fantasy.game.communication.impl.AudioResourceMP3FileResolver;
+import mro.fantasy.game.plan.Plan;
+import mro.fantasy.game.plan.TileTemplate;
 import mro.fantasy.game.resources.ResourceBundle;
 import mro.fantasy.game.resources.impl.ClasspathResourceBundleProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;

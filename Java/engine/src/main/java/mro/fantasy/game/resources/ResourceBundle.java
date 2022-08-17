@@ -1,8 +1,9 @@
 package mro.fantasy.game.resources;
 
 import mro.fantasy.game.engine.GameLibrary;
-import mro.fantasy.game.engine.plan.Plan;
-import mro.fantasy.game.engine.plan.Tile;
+import mro.fantasy.game.plan.Plan;
+import mro.fantasy.game.plan.Tile;
+import mro.fantasy.game.plan.TileLibrary;
 
 import java.util.List;
 import java.util.Map;
@@ -15,6 +16,13 @@ import java.util.function.Function;
  * @since 2022-08-04
  */
 public interface ResourceBundle<T extends GameResource> {
+
+    /**
+     * Returns the name of the resource bundle.
+     *
+     * @return the name
+     */
+    String getName();
 
     /**
      * Returns the resource with the given unique ID. The resources have to be immutable within the bundle
@@ -37,9 +45,9 @@ public interface ResourceBundle<T extends GameResource> {
      * Loads the resources of the resource bundle. The method is called by the {@link ResourceLibrary} (which is triggered by the {@link GameLibrary} {@link
      * javax.annotation.PostConstruct} method) and loads all data from the underlying {@link ResourceBundle}.
      * <p>
-     * Resources may depend on each other, i.e. the passed game library may not be fully filled with all data. While resources like {@link Tile}s
-     * are completely independent, a {@link Plan} depends on the tiles from the {@link mro.fantasy.game.engine.plan.TileLibrary}. The correct
-     * order of the call to the {@link #loadResources(Function)} method is managed in the {@link GameLibrary}.
+     * Resources may depend on each other, i.e. the passed game library may not be fully filled with all data. While resources like {@link Tile}s are completely independent, a
+     * {@link Plan} depends on the tiles from the {@link TileLibrary}. The correct order of the call to the {@link #loadResources(Function)} method is
+     * managed in the {@link GameLibrary}.
      *
      * @param builder the builder function to convert generic YAML data into a GameResource of type T
      */

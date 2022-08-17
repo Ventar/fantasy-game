@@ -16,6 +16,11 @@ import org.springframework.context.annotation.PropertySource;
 public class GameConfig {
 
     /**
+     * Log seperator string :)
+     */
+    public static final String LOG_SEPERATOR = "----------------------------------------------------------------------------";
+
+    /**
      * UDP port that is used by the {@link UDPDeviceEventServiceImpl} to listen for incoming events.
      */
     @Value("${game.event.udp.port}")

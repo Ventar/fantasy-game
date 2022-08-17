@@ -1,7 +1,7 @@
 package mro.fantasy.game.engine.services.los;
 
 import mro.fantasy.game.Position;
-import mro.fantasy.game.engine.plan.Plan;
+import mro.fantasy.game.plan.Plan;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

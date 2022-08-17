@@ -11,15 +11,22 @@ import java.security.MessageDigest;
 public class Hash {
 
     /**
+     * Utility class.
+     */
+    private Hash() {
+
+    }
+
+    /**
      * Converts a byte array into a hex String.
      *
      * @param text the text content to hash
+     *
      * @return the String representation
      */
     public static String hash(String text) {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
-            //LOG.trace("Calculate Hash for : {}", text.replaceAll("[\\s\\t(\\r?\\n)]+", ""));
             md.update(text.getBytes());
             byte[] hash = md.digest();
 
@@ -43,6 +50,7 @@ public class Hash {
      *
      * @param text   the text content to hash
      * @param regexp the regexp to use to remove data from the String before hashing
+     *
      * @return the String representation
      */
     public static String hash(String text, String regexp) {

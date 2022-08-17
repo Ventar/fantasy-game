@@ -113,9 +113,8 @@ public class DeviceSimulator {
     }
 
     public static void main(String[] args) throws UnknownHostException {
-        DeviceSimulator simulator = new DeviceSimulator(DeviceType.BOARD_MODULE, InetAddress.getByName("192.168.2.181"), "17FEBA2BDF20", 4000, 6000);
+        DeviceSimulator simulator = new DeviceSimulator(DeviceType.BOARD_MODULE, InetAddress.getByName("172.17.196.62"), "17FEBA2BDF20", 4000, 6000);
         simulator.sendData(1, new byte[]{0});
-
     }
 
 }

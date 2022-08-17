@@ -2,7 +2,7 @@ package mro.fantasy.game.utils;
 
 import mro.fantasy.game.Position;
 import mro.fantasy.game.Size;
-import mro.fantasy.game.engine.plan.TileRotation;
+import mro.fantasy.game.plan.TileRotation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
@@ -21,6 +21,13 @@ public final class YAMLUtilities {
 
 
     /**
+     * Utility class.
+     */
+    private YAMLUtilities() {
+
+    }
+
+    /**
      * Tries to load a YAML map from the passed resource name in the classpath
      *
      * @param name name of the desired resource
@@ -31,8 +38,7 @@ public final class YAMLUtilities {
      */
     public static Map<String, Object> fromClasspath(String name) {
         Yaml yaml = new Yaml(); // not thread safe !
-        Map<String, Object> map = yaml.load(YAMLUtilities.class.getResourceAsStream(name));
-        return map;
+        return yaml.load(YAMLUtilities.class.getResourceAsStream(name));
     }
 
     /**
@@ -77,7 +83,6 @@ public final class YAMLUtilities {
         try {
             return (T) map.get(key);
         } catch (ClassCastException e) {
-            LOG.trace("Cannot cast key ::=[{}]: ", key, e);
             throw new IllegalArgumentException("The key ::= [" + key + "] cannot be cast to the target type", e);
         }
     }
@@ -111,7 +116,7 @@ public final class YAMLUtilities {
      * @param consumer the operation to execute on the entries
      */
     public static void forEach(Map<String, Object> map, String key, Consumer<Map<String, Object>> consumer) {
-        getMandatoryList(map, key).stream().forEach(data -> consumer.accept(data));
+        getMandatoryList(map, key).stream().forEach(consumer::accept);
     }
 
     /**
@@ -126,7 +131,7 @@ public final class YAMLUtilities {
      */
     public static Position parsePosition(Map<String, Object> map, String key) {
         String data = getMandatory(map, key);
-        ValidationUtils.requireTrue(data.matches("\\([0-9]{1,2}\\|[0-9]{1,2}\\)"), "The key ::= [" + key + "] does not have the format (x|y)");
+        ValidationUtils.requireTrue(data.matches("\\(\\d{1,2}\\|\\d{1,2}\\)"), "The key ::= [" + key + "] does not have the format (x|y)");
 
         String[] coordinates = data.split("\\|");
 
@@ -146,7 +151,7 @@ public final class YAMLUtilities {
      */
     public static Size parseSize(Map<String, Object> map, String key) {
         String data = getMandatory(map, key);
-        ValidationUtils.requireTrue(data.matches("[0-9]{1,2}x[0-9]{1,2}"), "The key ::= [" + key + "] does not have the format {columns}x{rows}");
+        ValidationUtils.requireTrue(data.matches("\\d{1,2}x\\d{1,2}"), "The key ::= [" + key + "] does not have the format {columns}x{rows}");
 
         String[] coordinates = data.split("x");
 

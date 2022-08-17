@@ -1,0 +1,41 @@
+@startuml
+!theme spacelab
+skinparam BackgroundColor #2B2B2B
+skinparam linetype ortho
+
+class AudioResourceBundle {}
+
+interface ResourceBundle<AudioResource> << Interface >> {
+    + getById(String) : AudioResource
+    + getAll() : List<AudioResource>
+    + loadResources(Function<..>) : void
+}
+
+AudioResourceBundle --o ResourceBundle : implements
+
+
+interface ResourceBundleProvider<AudioResource,\n AudioResourceBundle> << Interface >> {
+   + getResourceBundles(): List<AudioResourceBundle>
+}
+
+ResourceBundleProvider --* AudioResourceBundle : @Autowired
+
+interface AudioCommunicationService  << (S,#00AA00) Service >>  {
+
+}
+
+AudioCommunicationService --* ResourceBundleProvider: @Autowired
+
+interface GameResource << Interface >> {
+    + getName(): String
+    + getDescription(): String
+    + getGameId(): String
+}
+
+
+AudioResource --o GameResource : implements
+
+ResourceBundle --> AudioResource : loads
+
+
+@enduml

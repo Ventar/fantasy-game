@@ -45,7 +45,7 @@ public abstract class AbstractGameEventProducer<E extends GameEvent, L extends G
         public void setEvent(E event) {
             synchronized (this) {
                 this.event = event;
-                this.notify();
+                this.notifyAll();
             }
         }
 
@@ -53,7 +53,9 @@ public abstract class AbstractGameEventProducer<E extends GameEvent, L extends G
         public E call() throws Exception {
 
             synchronized (this) {
-                this.wait();
+                while (this.event == null) {
+                    this.wait();
+                }
             }
 
             return event;
@@ -86,7 +88,7 @@ public abstract class AbstractGameEventProducer<E extends GameEvent, L extends G
      *
      * @param deviceType the type of the device that is handled by this event provider
      */
-    public AbstractGameEventProducer(DeviceType deviceType) {
+    protected AbstractGameEventProducer(DeviceType deviceType) {
         this.deviceType = deviceType;
     }
 

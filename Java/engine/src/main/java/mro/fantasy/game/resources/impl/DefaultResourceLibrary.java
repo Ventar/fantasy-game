@@ -46,7 +46,7 @@ public class DefaultResourceLibrary<T extends GameResource> implements ResourceL
             return;
         }
 
-        this.resources = resourceProvider.stream()                                           // iterate over all resource provider
+        this.resources = resourceProvider.stream()                                      // iterate over all resource provider
                 .map(ResourceBundleProvider::getResourceBundles)                        // fetch all available resources bundles from that provider
                 .flatMap(Collection::stream)
                 .flatMap(bundle -> {                                                    // load the resources
@@ -54,9 +54,14 @@ public class DefaultResourceLibrary<T extends GameResource> implements ResourceL
                     return bundle.getAll().stream();
                 })
                 .collect(Collectors.toMap(                                              // add a new map entry with the id to
-                        res -> res.getGameId(), res -> res));                               // the resource map to allow efficient access to single resources
+                        GameResource::getGameId, res -> res));                          // the resource map to allow efficient access to single resources
 
         LOG.debug("Created new library with ::= [{}] resources", resources.size());
+    }
+
+    @Override
+    public String getName() {
+        return this.getClass().getSimpleName();
     }
 
     @Override

@@ -4,7 +4,7 @@ import mro.fantasy.game.engine.GameLibrary;
 import mro.fantasy.game.engine.character.Character;
 import mro.fantasy.game.engine.character.CharacterExtension;
 import mro.fantasy.game.Size;
-import mro.fantasy.game.engine.communication.impl.AbstractAudioGameResource;
+import mro.fantasy.game.communication.impl.AbstractAudioGameResource;
 import mro.fantasy.game.engine.gamedata.GameDataSet;
 
 import java.util.Map;

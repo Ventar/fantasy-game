@@ -1,7 +1,7 @@
 package mro.fantasy.game.engine.character;
 
 import mro.fantasy.game.resources.GameResource;
-import mro.fantasy.game.engine.communication.AudioCommunicationService;
+import mro.fantasy.game.communication.AudioCommunicationService;
 import mro.fantasy.game.engine.gamedata.GameDataSet;
 
 /**

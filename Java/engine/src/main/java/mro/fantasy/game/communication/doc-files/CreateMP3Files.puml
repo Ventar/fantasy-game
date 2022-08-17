@@ -1,0 +1,49 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+!theme spacelab
+skinparam backgroundColor #2B2B2B
+
+autonumber
+
+actor "Developer" as DEV
+participant "Project" as PRO
+participant "Maven" as MAV
+participant "AudioResource\nFileManager" as ARFM
+participant "AudioCommunication\nService" as ACS
+
+group Development
+   note over DEV,PRO
+   **""- key: game.name""**
+        **""hash:""**
+        **""ssml: |-""**
+            **""<speak>War of Elements</speak>""**
+
+   the ISO 639-1 code is optional, language is
+   taken from the YAML inside of the file
+   (see base-game-resources maven project
+   for an example)
+  end note
+  DEV -> PRO: Add key to file together with SSML\n""resources/mp3/example_en.yaml""
+end
+group Build
+ DEV -> MAV: trigger maven build\nmvn clean install -Pspeech
+ note over DEV, MAV
+   see the base-game-resources maven project for an example of the plugin
+   configuration. The profile is needed to avoid generation in CICD environments.
+ end note
+ MAV -> ARFM: load YAML files from\nthe plugin config
+ ARFM <-> AWS: generate MP3 file via\nAmazon Polly
+ ARFM -> PRO: store MP3 in\n""resources/mp3/data/example_en/game_name.mp3""
+end
+group GIT
+ DEV -> PRO: commit the source code to GIT\n(optional)
+end
+group Runtime
+  Service -> ACS: **""playSync("Example", "game.name", Locale.ENGLISH)""**
+  ACS -> PRO: load mp3 file\n""resources/mp3/data/example_en/game_name.mp3""\nvia classpath
+  ACS -> ACS: start playback
+end
+
+
+
+@enduml

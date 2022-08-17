@@ -30,4 +30,5 @@ GameEvent .. GameEventListener : processes
 DeviceEventService --* DeviceEventHandler : @Auowired
 DeviceEventHandler -- DeviceDataPackage : handles
 
+
 @enduml

@@ -1,5 +1,6 @@
 package mro.fantasy.game.resources.impl;
 
+import mro.fantasy.game.GameConfig;
 import mro.fantasy.game.resources.GameResource;
 import mro.fantasy.game.resources.ResourceBundle;
 import mro.fantasy.game.resources.ResourceBundleProvider;
@@ -13,8 +14,8 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * Utility class that scans the Java classpath for YAML files and convert them to Java classes.
@@ -61,21 +62,20 @@ public class ClasspathResourceBundleProvider<R extends GameResource, T extends R
      * Creates a new {@link ClasspathResourceBundleProvider} that creates {@link DefaultResourceBundle} from the passed directory.
      *
      * @param directory        the directory to scan
-     * @param resourceFunction the function to create the actual resource from the YAML file
      *
      * @return the provider
      */
     public static ClasspathResourceBundleProvider forDefaultResourceBundle(String directory) {
-        return new ClasspathResourceBundleProvider(directory, (res) -> new DefaultResourceBundle((Resource) res));
+        return new ClasspathResourceBundleProvider(directory, res -> new DefaultResourceBundle((Resource) res));
     }
 
     @PostConstruct
     private void postConstruct() {
 
         LOG.debug("");
-        LOG.debug("----------------------------------------------------------------------------");
+        LOG.debug(GameConfig.LOG_SEPERATOR);
         LOG.debug("Initialize Resource Provider for directory ::= [{}]",directory);
-        LOG.debug("----------------------------------------------------------------------------");
+        LOG.debug(GameConfig.LOG_SEPERATOR);
 
         PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
         Resource[] resources;
@@ -99,13 +99,13 @@ public class ClasspathResourceBundleProvider<R extends GameResource, T extends R
                         if (LOG.isTraceEnabled()) {                                                       // on TRACE we will print the complete stacktrace but for all other
                             LOG.warn("Could not load resource bundle: ", e);                              // log levels, only the message is shown in a warning.
                         } else {
-                            LOG.warn("Could not create resource bundle (enable TRACE for more information): ", e.getMessage());
+                            LOG.warn("Could not create resource bundle (enable TRACE for more information): {}", e.getMessage());
                         }
                         return null;
                     }
                 })
-                .filter(res -> res != null)                                                               // in case of an exception the YAML file is ignored
-                .collect(Collectors.toList());
+                .filter(Objects::nonNull)                                                                // in case of an exception the YAML file is ignored
+                .toList();
 
         LOG.debug("");
         LOG.debug("Initialization of resource provider for directory ::= [{}] DONE", directory);

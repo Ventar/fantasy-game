@@ -3,10 +3,10 @@
  * <h2>Resources, Resource Bundles and Providers</h2>
  * Within the game there are multiple resources which are used to build up the game system. Examples for resources are
  * <ul>
- *   <li>{@link mro.fantasy.game.engine.plan.Plan}s,</li>
- *   <li>their {@link   mro.fantasy.game.engine.plan.TileTemplate}s,</li>
+ *   <li>{@link mro.fantasy.game.plan.Plan}s,</li>
+ *   <li>their {@link   mro.fantasy.game.plan.TileTemplate}s,</li>
  *   <li>{@link mro.fantasy.game.engine.character.Character}s or</li>
- *   <li>{@link mro.fantasy.game.engine.communication.data.AudioResource}s</li>
+ *   <li>{@link mro.fantasy.game.communication.impl.AudioResource}s</li>
  * </ul>
  * <p>
  * What resources have in common is that they have multiple concrete implementations and can be extended easily with the help of files, APIs or databases. The idea behind resources
@@ -44,7 +44,7 @@
  * later in the {@link mro.fantasy.game.engine.GameLibrary}. The game library is a wrapper for all resource libraries which are used by the game engine and offers access to
  * all available resources. It aggregates concrete instances of resource libraries and calls the
  * {@link mro.fantasy.game.resources.ResourceLibrary#loadResources(java.util.function.Function)} in the correct order during the Spring {@code @PostConstruct }  phase. All
- * {@link mro.fantasy.game.engine.plan.Plan}s for example are loaded after the {@link mro.fantasy.game.engine.plan.TileTemplate}s which it uses.
+ * {@link mro.fantasy.game.plan.Plan}s for example are loaded after the {@link mro.fantasy.game.plan.TileTemplate}s which it uses.
  * <p>
  * <img src="doc-files/GameLibrary.png"/>
  */

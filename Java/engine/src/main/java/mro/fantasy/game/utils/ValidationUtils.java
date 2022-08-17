@@ -17,14 +17,12 @@ public final class ValidationUtils {
         return obj;
     }
 
-    public static void requireFalse(Boolean term, String message) {
+    public static void requireFalse(boolean term, String message) {
         if (term) {throw new IllegalArgumentException(message);}
-
     }
 
-    public static void requireTrue(Boolean term, String message) {
+    public static void requireTrue(boolean term, String message) {
         if (!term) {throw new IllegalArgumentException(message);}
-
     }
 
 }
