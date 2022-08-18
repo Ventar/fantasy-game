@@ -6,7 +6,7 @@ import mro.fantasy.game.devices.events.GameEventListener;
 import java.util.List;
 
 /**
- * Listener that is triggered when an event from a {@link GameBoard} is received. The physical game board has 4 HAL sensors (detect magnetic fields) for every field and 4 magnets
+ * Listener that is triggered when an event from a {@link BoardController} is received. The physical game board has 4 HAL sensors (detect magnetic fields) for every field and 4 magnets
  * to keep tiles on top of the fields in place. The scenic tiles which are placed on top of a field have the same 4 magnets to keep them in place and one or more additional ones to
  * activate the HAL sensors.
  * <pre>{@code
@@ -39,7 +39,7 @@ import java.util.List;
  * @author Michael Rodenbuecher
  * @since 2022-08-12
  */
-public interface GameBoardEventListener extends GameEventListener<GameBoardEventListener.GameBoardEvent> {
+public interface BoardControllerEventListener extends GameEventListener<BoardControllerEventListener.BoardEvent> {
 
     /**
      * Information about an updated field.
@@ -71,13 +71,13 @@ public interface GameBoardEventListener extends GameEventListener<GameBoardEvent
      * @param board         the game board
      * @param updatedFields the updated fields
      */
-    record GameBoardEvent(GameBoard board, List<FieldUpdate> updatedFields) implements GameEvent {}
+    record BoardEvent(BoardController board, List<FieldUpdate> updatedFields) implements GameEvent {}
 
     /**
-     * Triggerd by a {@link GameBoard} when the state of a HAL sensor changes.
+     * Triggerd by a {@link BoardController} when the state of a HAL sensor changes.
      *
      * @param event the triggered event.
      */
-    void onGameBoardEvent(GameBoardEvent event);
+    void onGameBoardEvent(BoardEvent event);
 
 }

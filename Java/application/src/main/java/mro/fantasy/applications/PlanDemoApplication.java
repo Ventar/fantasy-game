@@ -1,7 +1,7 @@
 package mro.fantasy.applications;
 
 import mro.fantasy.game.Position;
-import mro.fantasy.game.devices.board.GameBoard;
+import mro.fantasy.game.devices.board.BoardController;
 import mro.fantasy.game.engine.GameLibrary;
 import mro.fantasy.game.plan.Plan;
 import mro.fantasy.game.plan.PlanDeltaService;
@@ -24,7 +24,7 @@ public class PlanDemoApplication implements CommandLineRunner {
     private PlanDeltaService deltaService;
 
     @Autowired
-    private GameBoard gameBoard;
+    private BoardController gameBoard;
 
     public static void main(String[] args) {
         SpringApplication.run(PlanDemoApplication.class, args);

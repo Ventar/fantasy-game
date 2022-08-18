@@ -10,7 +10,7 @@ import mro.fantasy.game.devices.events.GameEventProducer;
  * @author Michael Rodenbuecher
  * @since 2022-08-12
  */
-public interface GameBoard extends DeviceEventHandler, GameEventProducer<GameBoardEventListener.GameBoardEvent, GameBoardEventListener> {
+public interface BoardController extends DeviceEventHandler, GameEventProducer<BoardControllerEventListener.BoardEvent, BoardControllerEventListener> {
 
     /**
      * Parses the datagram package for update information on board field HAL sensors.
@@ -34,6 +34,6 @@ public interface GameBoard extends DeviceEventHandler, GameEventProducer<GameBoa
      *
      * @return the event
      */
-    GameBoardEventListener.GameBoardEvent createEvent(DeviceDataPackage eventData);
+    BoardControllerEventListener.BoardEvent createEvent(DeviceDataPackage eventData);
 
 }

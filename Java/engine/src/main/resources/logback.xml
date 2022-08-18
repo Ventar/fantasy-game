@@ -19,7 +19,7 @@
   <logger name="org.springframework.boot.autoconfigure.logging" level="INFO"/>
   
   <logger name="mro" level="TRACE"/>
-  <logger name="mro.fantasy.game.devices.board.GameBoard" level="DEBUG"/>
+  <logger name="mro.fantasy.game.devices.board.BoardController" level="DEBUG"/>
   <logger name="mro.fantasy.game.devices.AbstractDevice" level="DEBUG"/>
   <logger name="mro.fantasy.game.communication.resources.AbstractCommunicationService" level="DEBUG"/>
   <logger name="mro.fantasy.game.engine.movement.MovementService" level="DEBUG"/>
