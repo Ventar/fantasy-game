@@ -86,12 +86,10 @@ public class TileTemplateImpl extends AbstractAudioGameResource implements TileT
 
     @Override
     public String toString() {
-        return "TileTemplateImpl{" +
-                       "type=" + type +
+        return "type=" + type +
                        ", name='" + name + '\'' +
                        ", size=" + size +
-                       ", fields=" + fields +
-                       '}';
+                       ", fields=" + fields;
     }
 
     /**

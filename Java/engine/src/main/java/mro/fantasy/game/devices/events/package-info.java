@@ -12,7 +12,7 @@
  * <h2>Handler vs. Listener in the Context of Spring</h2>
  * The event implementation uses handler and listeners. Actually both types behave similar but the control flow is different. Regardless if you have a handler or a listener, both
  * of them are defined in interfaces which have a method to react on certain kind of data passed to it. In the event implementation the {@link
- * mro.fantasy.game.devices.events.DeviceEventHandler#handle(DeviceDataPackage)} method and the {@link mro.fantasy.game.devices.events.GameEventListener#onEvent(java.lang.Object)}
+ * mro.fantasy.game.devices.events.DeviceEventHandler#handle(DeviceDataPackage)} method and the {@link mro.fantasy.game.devices.events.GameEventListener#onEvent(mro.fantasy.game.devices.events.GameEvent)}
  * method do actually the same.
  * <p>
  * <img src="doc-files/HandlerVsListener.png"/>

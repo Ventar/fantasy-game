@@ -68,8 +68,6 @@ public final class DefaultResourceBundle<T extends GameResource> implements Reso
             Map<String, Object> map = yaml.load(inputResource.getInputStream());
             var yamlResources = (List<Map<String, Object>>) map.get("resources");
 
-            LOG.debug("Loaded  YAML with ::= [{}] resource entries", yamlResources.size());
-
             this.resources = yamlResources
                     .stream()                                                       // iterate over all Resource entries in the list
                     .map(builder)                                                   // convert the YAML map to a Java class and convert it
@@ -77,7 +75,7 @@ public final class DefaultResourceBundle<T extends GameResource> implements Reso
 
             this.name = YAMLUtilities.getMandatory(map, "bundleName");
 
-            LOG.debug("Created resource bundle ::= [{}]", this.name);
+            LOG.debug("Created resource bundle ::= [{}] with ::= [{}] resource entries", this.name,yamlResources.size());
 
         } catch (IOException e) {
             LOG.warn("Cannot load resource bundle from resource ::= [{}]: ", resources, e);

@@ -6,7 +6,7 @@ package mro.fantasy.game.devices.events;
  * @author Michael Rodenbuecher
  * @since 2022-08-13
  */
-public interface GameEventListener<E> {
+public interface GameEventListener<E extends GameEvent> {
 
     /**
      * Marks the listener as one-time listener. A one-time listener is removed from the {@link GameEventProducer} as soon as an event was delivered to it.

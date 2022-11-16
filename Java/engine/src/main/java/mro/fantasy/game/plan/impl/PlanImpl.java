@@ -158,7 +158,7 @@ public class PlanImpl extends AbstractGameResource implements Plan {
         ValidationUtils.requireNonNull(position, "The position cannot be null.");
         ValidationUtils.requireNonNull(rotation, "The rotation cannot be null.");
 
-        LOG.debug("Try to assign template ::= [{}] to position ::= [{}] with rotation ::=[{}]", template, position, rotation);
+        LOG.trace("Try to assign template ::= [{}] to position ::= [{}] with rotation ::=[{}]", template, position, rotation);
 
         /*
          *   Example asymmetric tile
@@ -215,7 +215,7 @@ public class PlanImpl extends AbstractGameResource implements Plan {
         int x = position.column() + 0;
         int y = position.row() + 0;
 
-        LOG.debug("x ::= [{}], y ::= [{}] width ::= [{}], height ::= [{}]", x, y, width, height);
+        LOG.trace("x ::= [{}], y ::= [{}] width ::= [{}], height ::= [{}]", x, y, width, height);
 
         // at this point we have a clear overview of the dimension and can check if the tile template will fit to the plan.
 

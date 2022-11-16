@@ -1,6 +1,5 @@
 package mro.fantasy.game.resources.impl;
 
-import mro.fantasy.game.GameConfig;
 import mro.fantasy.game.resources.GameResource;
 import mro.fantasy.game.resources.ResourceBundle;
 import mro.fantasy.game.resources.ResourceBundleProvider;
@@ -61,7 +60,7 @@ public class ClasspathResourceBundleProvider<R extends GameResource, T extends R
     /**
      * Creates a new {@link ClasspathResourceBundleProvider} that creates {@link DefaultResourceBundle} from the passed directory.
      *
-     * @param directory        the directory to scan
+     * @param directory the directory to scan
      *
      * @return the provider
      */
@@ -71,11 +70,6 @@ public class ClasspathResourceBundleProvider<R extends GameResource, T extends R
 
     @PostConstruct
     private void postConstruct() {
-
-        LOG.debug("");
-        LOG.debug(GameConfig.LOG_SEPERATOR);
-        LOG.debug("Initialize Resource Provider for directory ::= [{}]",directory);
-        LOG.debug(GameConfig.LOG_SEPERATOR);
 
         PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
         Resource[] resources;
@@ -87,7 +81,7 @@ public class ClasspathResourceBundleProvider<R extends GameResource, T extends R
             return;
         }
 
-        LOG.debug("Found ::= [{}] potential YAML files in path ::= [{}]", resources.length, directory);
+        LOG.info("ClasspathResourceBundleProvider: Found ::= [{}] potential YAML files in path ::= [{}]", resources.length, directory);
 
         this.resourceFileContent = Arrays                                                                 // try to create tile bundles for every YAML file
                 .stream(resources)
@@ -107,10 +101,7 @@ public class ClasspathResourceBundleProvider<R extends GameResource, T extends R
                 .filter(Objects::nonNull)                                                                // in case of an exception the YAML file is ignored
                 .toList();
 
-        LOG.debug("");
-        LOG.debug("Initialization of resource provider for directory ::= [{}] DONE", directory);
-        LOG.debug("----------------------------------------------------------------------------");
-        LOG.debug("");
+        LOG.info("ClasspathResourceBundleProvider: Initialization of resource provider for directory ::= [{}] DONE", directory);
 
     }
 

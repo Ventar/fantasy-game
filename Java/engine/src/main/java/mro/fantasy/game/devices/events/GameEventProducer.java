@@ -8,7 +8,7 @@ import java.util.concurrent.Future;
  * @param <L> the type of event listener that is used
  * @param <E> the type of event that is handled
  */
-public interface GameEventProducer<E extends GameEvent, L extends GameEventListener<E>> extends DeviceEventHandler {
+public interface GameEventProducer<E extends GameEvent, L extends GameEventListener<E>> {
 
     /**
      * Registers a new event listener which will be triggered when a new event is raised.
@@ -23,15 +23,6 @@ public interface GameEventProducer<E extends GameEvent, L extends GameEventListe
      * @param listener the listener to remove.
      */
     void removeListener(L listener);
-
-    /**
-     * Factory method to create the concrete implementation of the event that is sent out to all {@link GameEventListener} which are registered for this provider.
-     *
-     * @param eventData the device event data
-     *
-     * @return the event
-     */
-    E createEvent(DeviceDataPackage eventData);
 
     /**
      * Returns a future that is resolved when the next event can be provided. This future can be used to block the execution of the current thread until a hardware event of the

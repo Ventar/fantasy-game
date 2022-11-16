@@ -73,11 +73,5 @@ public interface BoardControllerEventListener extends GameEventListener<BoardCon
      */
     record BoardEvent(BoardController board, List<FieldUpdate> updatedFields) implements GameEvent {}
 
-    /**
-     * Triggerd by a {@link BoardController} when the state of a HAL sensor changes.
-     *
-     * @param event the triggered event.
-     */
-    void onGameBoardEvent(BoardEvent event);
 
 }

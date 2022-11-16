@@ -15,20 +15,19 @@ public interface BoardController extends DeviceEventHandler, GameEventProducer<B
     /**
      * Parses the datagram package for update information on board field HAL sensors.
      * <p>
-     * The {@link DeviceDataPackage#getData()} content has to match the following structure:
+     * Every data package starts with the header in the first 8 bytes and is followed by the {@link DeviceDataPackage#getData()} content that has to match the following structure:
      * <pre>{@code
-     *  byte -  | 9       | 10     | 11             |
-     *  bit  -  | 7..0    | 7..0   | 7..0           |
-     *  data -  | records | column | row            |
-     *          |         | repeated <records> time |
+     *  byte -  | 9       | 10     | 11     | 12           |
+     *  data -  | records | column | row    | sensor state |
+     *          |         | repeated <records> time        |
      *
-     *  byte -  | 12                                                                     |
-     *  bit  -  | 7 6 5 4   3              2               1              0              |
-     *  data -  | <empty>   west enabled   south enabled   east enabled   north enabled  |
-     *          | repeated <records> time                                                |
+     *  with sensor state
+     *  bit  -  | 7 6 5 4   3     2     1     0      |
+     *  data -  | <empty>   west  south east  north  |
+     *
      * }</pre>
      * <p>
-     * where the records' field indicate how many fields have changed the value and the following structure of column, row and sensor result indicate the current state of a field
+     * where the records' field indicate how many fields have changed the value and the following structure of column, row and sensor result indicate the current state of a field.
      *
      * @param eventData the device event data
      *

@@ -1,9 +1,9 @@
-package mro.fantasy.game.devices.plaver;
+package mro.fantasy.game.devices.player;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static mro.fantasy.game.devices.plaver.RFIDCodeType.*;
+import static mro.fantasy.game.devices.player.RFIDCodeType.*;
 
 public enum RFIDCode {
 

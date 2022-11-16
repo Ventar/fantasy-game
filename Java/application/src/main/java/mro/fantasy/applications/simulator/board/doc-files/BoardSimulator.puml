@@ -1,0 +1,61 @@
+@startuml
+!theme spacelab
+skinparam BackgroundColor #2B2B2B
+skinparam linetype ortho
+
+class BoardDeviceSimulator  << (A,#AA0000) Application >> implements DeviceEventHandler {
+   Main class that starts a Swing UI to simulate a hardware
+   board module.
+   ..
+}
+
+class Configuration {
+    Configuration class to construct Spring services from the
+    engine project which are used by the application.
+    ..
+    + createEventService() : DeviceEventService
+    + createEventThreadPool() : EventThreadPool
+}
+
+interface DeviceEventHandler  << Interface >> {
+
+}
+
+interface DeviceEventService  << Interface >> {
+  Service that listens for events from the game server sent to
+  the device simulator.
+  ..
+}
+
+Configuration ..> DeviceEventService : constructs
+DeviceEventService ...> DeviceEventHandler : informs about\nincoming\nevent
+
+class BoardFrame << (C,#AAAA00) Component >> {
+  Swing JFrame that renders a board module on its content
+  pane.
+}
+
+BoardFrame --* BoardModel : uses
+
+class BoardModel << (C,#AAAA00) Component >> {
+  Component that contains a matrix of fields organized
+  in columns and rows.
+}
+
+class BoardField {
+  Single field on the game board with 4 HAL sensors
+  and a LED.
+  ..
+  + onClick(Point) : void
+  + getSensorState() : byte
+  + getLastChange() : long
+}
+
+BoardModel ..* BoardField: contains
+
+BoardDeviceSimulator --> BoardModel: upate / poll
+
+
+
+
+@enduml

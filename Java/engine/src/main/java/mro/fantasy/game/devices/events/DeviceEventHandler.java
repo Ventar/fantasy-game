@@ -15,4 +15,6 @@ public interface DeviceEventHandler {
      * @param eventData the preparsed event data to handle.
      */
     void handle(DeviceDataPackage eventData);
+
+
 }

@@ -13,9 +13,9 @@ import java.util.stream.IntStream;
  * following structure:
  *
  * <pre>{@code
- * part -  | HEADER                                           |  DATA
- * byte -  |  0   | 1    |     | 6    | 7           | 8       |  [9+]
- * data -  | device MAC Address       | device Type | eventId |  [data]
+ * part -  | HEADER                                        |  DATA
+ * byte -  |  0  - 6               | 7           | 8       |  [9+]
+ * data -  | device MAC Address    | device Type | eventId |  [data]
  * } </pre>
  * <p>
  * The MAC address is used to identify the device uniquely within the game system, the {@link DeviceType} is used to distribute the event to the correct handler and allows in
@@ -69,10 +69,12 @@ public class DeviceDataPackage {
         // the next part can only retrieve the data, additional validation must be done by the event handler.
 
         Condition.of(datagram.length > 8).ifTrue(() -> this.data = Arrays.copyOfRange(datagram, 9, datagram.length));  // data
-        IntStream.range(0, 6).forEach(i -> this.deviceId += String.format("%02X", datagram[i]));                            // deviceId
-        this.deviceType = DeviceType.fromInteger(datagram[7]);                                                              // deviceType
-        this.eventId = datagram[8];                                                                                         // eventId
+        IntStream.range(0, 5).forEach(i -> this.deviceId += String.format("%02X", datagram[i]));                            // deviceId
+        this.deviceType = DeviceType.fromInteger(datagram[6]);                                                              // deviceType
+        this.eventId = Byte.toUnsignedInt(datagram[7]);                                                                    // eventId
         this.raw = datagram;
+        this.data = new byte[raw.length - 8];
+        System.arraycopy(raw, 8, this.data, 0, raw.length - 8);              // data
 
     }
 
@@ -93,9 +95,9 @@ public class DeviceDataPackage {
 
         this.raw = new byte[8 + data.length];
         byte[] rawDeviceId = HexFormat.of().parseHex(deviceId);
-        IntStream.range(0, 6).forEach(i -> raw[i] = rawDeviceId[i]);                    // device ID
-        this.raw[7] = (byte) deviceType.getTypeId();                                    // deviceType
-        this.raw[8] = (byte) eventId;                                                   // eventId
+        IntStream.range(0, 5).forEach(i -> raw[i] = rawDeviceId[i]);                    // device ID
+        this.raw[6] = (byte) deviceType.getTypeId();                                    // deviceType
+        this.raw[7] = (byte) eventId;                                                   // eventId
         System.arraycopy(data, 0, this.raw, 8, data.length);              // data
     }
 

@@ -1,4 +1,4 @@
-package mro.fantasy.game.devices.plaver;
+package mro.fantasy.game.devices.player;
 
 import mro.fantasy.game.devices.events.GameEvent;
 import mro.fantasy.game.devices.events.GameEventListener;

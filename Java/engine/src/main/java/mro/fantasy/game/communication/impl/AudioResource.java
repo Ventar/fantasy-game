@@ -383,7 +383,7 @@ public class AudioResource implements GameResource {
                 (String) resource.get("hash"),
                 mp3StreamFunction);
 
-        LOG.debug("Created new audio resource: {}", cRes);
+        LOG.trace("Created new audio resource: {}", cRes);
 
         return cRes;
     }

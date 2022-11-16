@@ -1,4 +1,4 @@
-package mro.fantasy.game.devices.plaver;
+package mro.fantasy.game.devices.player;
 
 /**
  * The type of an RFID code.

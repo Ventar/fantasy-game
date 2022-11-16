@@ -1,4 +1,4 @@
-package mro.fantasy.applications;
+package mro.fantasy.applications.audio;
 
 import mro.fantasy.game.communication.AudioCommunicationService;
 import mro.fantasy.game.communication.impl.AudioCommunicationServiceImpl;
@@ -11,7 +11,7 @@ import org.springframework.context.annotation.ComponentScan;
 import java.util.Locale;
 
 @SpringBootConfiguration
-@ComponentScan("mro.fantasy.game")
+@ComponentScan({"mro.fantasy.game", "mro.fantasy.applications.plan"})
 public class AudioDemoApplication implements CommandLineRunner {
 
     @Autowired

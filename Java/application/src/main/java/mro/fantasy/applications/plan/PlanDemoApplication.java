@@ -1,7 +1,8 @@
-package mro.fantasy.applications;
+package mro.fantasy.applications.plan;
 
 import mro.fantasy.game.Position;
 import mro.fantasy.game.devices.board.BoardController;
+import mro.fantasy.game.devices.discovery.impl.DeviceDiscoveryServiceImpl;
 import mro.fantasy.game.engine.GameLibrary;
 import mro.fantasy.game.plan.Plan;
 import mro.fantasy.game.plan.PlanDeltaService;
@@ -10,11 +11,10 @@ import mro.fantasy.game.plan.impl.ASCIIPlanRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.context.annotation.ComponentScan;
 
-@SpringBootConfiguration
-@ComponentScan("mro.fantasy.game")
+
+@ComponentScan({"mro.fantasy.game", "mro.fantasy.applications.plan"})
 public class PlanDemoApplication implements CommandLineRunner {
 
     @Autowired
@@ -25,6 +25,9 @@ public class PlanDemoApplication implements CommandLineRunner {
 
     @Autowired
     private BoardController gameBoard;
+
+    @Autowired
+    private DeviceDiscoveryServiceImpl deviceDiscoveryService;
 
     public static void main(String[] args) {
         SpringApplication.run(PlanDemoApplication.class, args);
@@ -49,7 +52,7 @@ public class PlanDemoApplication implements CommandLineRunner {
 
         System.out.println("Wait for callback....");
 
-        var event = gameBoard.waitForEvent();
+        var event = deviceDiscoveryService.waitForEvent();
 
         System.out.println("Received event: " + event.get());
 

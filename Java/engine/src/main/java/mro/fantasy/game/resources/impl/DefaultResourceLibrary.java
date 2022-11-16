@@ -56,7 +56,7 @@ public class DefaultResourceLibrary<T extends GameResource> implements ResourceL
                 .collect(Collectors.toMap(                                              // add a new map entry with the id to
                         GameResource::getGameId, res -> res));                          // the resource map to allow efficient access to single resources
 
-        LOG.debug("Created new library with ::= [{}] resources", resources.size());
+        LOG.debug("Created new library with ::= [{}] resources from ::= [{}] resource providers", resources.size(), resourceProvider.size());
     }
 
     @Override

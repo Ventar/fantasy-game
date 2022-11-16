@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
 /**
@@ -30,39 +29,6 @@ public abstract class AbstractGameEventProducer<E extends GameEvent, L extends G
     public static final Logger LOG = LoggerFactory.getLogger(AbstractGameEventProducer.class);
 
     /**
-     * Callback that is resolved when an event was set with the {@link #setEvent(GameEvent)}} method.
-     *
-     * @author Michael Rodenbuehcer
-     * @since 2022-08-13
-     */
-    private class EventCallback implements Callable<E> {
-
-        /**
-         * Event to deliver.
-         */
-        private E event;
-
-        public void setEvent(E event) {
-            synchronized (this) {
-                this.event = event;
-                this.notifyAll();
-            }
-        }
-
-        @Override
-        public E call() throws Exception {
-
-            synchronized (this) {
-                while (this.event == null) {
-                    this.wait();
-                }
-            }
-
-            return event;
-        }
-    }
-
-    /**
      * Threadpool to handle device related tasks.
      */
     @Autowired
@@ -79,7 +45,7 @@ public abstract class AbstractGameEventProducer<E extends GameEvent, L extends G
     private DeviceType deviceType;
 
     /**
-     * A list of futures that wait to
+     * A list of futures that wait to be resolved.
      */
     private List<EventCallback> callbacks = new ArrayList<>();
 
@@ -103,6 +69,15 @@ public abstract class AbstractGameEventProducer<E extends GameEvent, L extends G
         LOG.debug("Removed event listener ::= [{}] from ::= [{}]", listener, getClass().getSimpleName());
         listenerSet.remove(listener);
     }
+
+    /**
+     * Factory method to create the concrete implementation of the event that is sent out to all {@link GameEventListener} which are registered for this provider.
+     *
+     * @param eventData the device event data
+     *
+     * @return the event
+     */
+    protected abstract E createEvent(DeviceDataPackage eventData);
 
     @Override
     public void handle(DeviceDataPackage eventData) {
