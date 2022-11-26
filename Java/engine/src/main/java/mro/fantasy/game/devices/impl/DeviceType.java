@@ -1,4 +1,4 @@
-package mro.fantasy.game.devices;
+package mro.fantasy.game.devices.impl;
 
 import mro.fantasy.game.devices.events.DeviceDataPackage;
 

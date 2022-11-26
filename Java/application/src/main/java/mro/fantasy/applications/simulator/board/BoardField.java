@@ -1,6 +1,7 @@
 package mro.fantasy.applications.simulator.board;
 
-import mro.fantasy.game.devices.board.BoardControllerEventListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.util.Arrays;
@@ -23,7 +24,7 @@ import java.util.List;
  *   └─────────────────────┘    └─────────────────────┘
  * }</pre>
  * If you place the example player tile on top of the field now (as shown above) the southern sensor of the field would be activated and this event listener would be triggered as a
- * result with an {@link BoardControllerEventListener.FieldUpdate} of column 5, row 8, northern false, eastern false, southern true and western false.
+ * result with an {@link mro.fantasy.game.engine.events.BoardUpdatedEvent.FieldUpdate} of column 5, row 8, northern false, eastern false, southern true and western false.
  * <p>
  * Some tiles have more than one magnet. This allows the detection in case they are spawning multiple fields. Examples for such tiles are scenic ones like crates that have a
  * dimension of 2x1 or monsters with a size of 2x2. Based on the magnets on these tiles the engine is able to detect the correct placement of such tiles.
@@ -42,6 +43,11 @@ import java.util.List;
  * @since 2022-08-21
  */
 public class BoardField {
+
+    /**
+     * Logger.
+     */
+    private static final Logger LOG = LoggerFactory.getLogger(BoardField.class);
 
     /**
      * The x coordinate of the field in the frame coordinate system.
@@ -211,7 +217,6 @@ public class BoardField {
         return Arrays.asList(north, east, south, west);
     }
 
-
     /**
      * Draws a new sensor field
      *
@@ -246,21 +251,26 @@ public class BoardField {
         if (north.contains(point.getX(), point.getY())) {
             northEnabled = !northEnabled;
             lastChange = System.currentTimeMillis();
+            LOG.trace("Change sensor state of ({}|{}) NORTH to ::= [{}]", column, Configuration.ROWS - row - 1, northEnabled);
         } else if (east.contains(point.getX(), point.getY())) {
             eastEnabled = !eastEnabled;
             lastChange = System.currentTimeMillis();
+            LOG.trace("Change sensor state of ({}|{}) EAST to ::= [{}]", column, Configuration.ROWS - row - 1, eastEnabled);
         } else if (south.contains(point.getX(), point.getY())) {
             southEnabled = !southEnabled;
             lastChange = System.currentTimeMillis();
+            LOG.trace("Change sensor state of ({}|{}) SOUTH to ::= [{}]", column, Configuration.ROWS - row - 1, southEnabled);
         } else if (west.contains(point.getX(), point.getY())) {
             westEnabled = !westEnabled;
             lastChange = System.currentTimeMillis();
+            LOG.trace("Change sensor state of ({}|{}) WEST to ::= [{}]", column, Configuration.ROWS - row - 1, westEnabled);
         } else if (northEnabled || eastEnabled || southEnabled || westEnabled) {
             northEnabled = false;
             eastEnabled = false;
             southEnabled = false;
             westEnabled = false;
             lastChange = System.currentTimeMillis();
+            LOG.trace("Change sensor state of ({}|{}), disable all sensors", column, Configuration.ROWS - row - 1);
         }
 
     }
@@ -286,6 +296,15 @@ public class BoardField {
     }
 
     /**
+     * Changes the color of the LED.
+     *
+     * @param ledColor the new color.
+     */
+    public void setLedColor(Color ledColor) {
+        this.ledColor = ledColor;
+    }
+
+    /**
      * Returns the timestamp of the last change of the sensor values for this field. The last change time is modified if the {@link #onClick(Point)} changes the state of a field
      * sensor
      *
@@ -295,5 +314,27 @@ public class BoardField {
         return lastChange;
     }
 
+    /**
+     * The colum of the field based on the lower left corner of the board.
+     *
+     * @return the column
+     */
+    public int getColumn() {
+        return column;
+    }
+
+    /**
+     * The row of the field based on the lower left corner of the board.
+     *
+     * @return the row
+     */
+    public int getRow() {
+        return Configuration.ROWS - row - 1;
+    }
+
+    @Override
+    public String toString() {
+        return "(" + column + "|" + (Configuration.ROWS - row - 1) + ")";
+    }
 }
 

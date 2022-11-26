@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
-import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -47,6 +46,11 @@ public class ClasspathResourceBundleProvider<R extends GameResource, T extends R
     private String directory;
 
     /**
+     * Indicator if the {@link #loadResources()} method of this class was executed once. If not an exception is thrown.
+     */
+    private boolean initialized;
+
+    /**
      * Creates a new provider that scans the passed directory for yaml files and tries to resolve them.
      *
      * @param directory the directory to scan
@@ -68,8 +72,8 @@ public class ClasspathResourceBundleProvider<R extends GameResource, T extends R
         return new ClasspathResourceBundleProvider(directory, res -> new DefaultResourceBundle((Resource) res));
     }
 
-    @PostConstruct
-    private void postConstruct() {
+    @Override
+    public void loadResources() {
 
         PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
         Resource[] resources;
@@ -87,7 +91,7 @@ public class ClasspathResourceBundleProvider<R extends GameResource, T extends R
                 .stream(resources)
                 .map(res -> {
                     try {
-                        LOG.debug("Try to create resource bundle from :.= [{}]", res.getURL().getFile());
+                        LOG.info("Try to create resource bundle from :.= [{}]", res.getURL().getFile());
                         return builder.apply(res);
                     } catch (Exception e) {
                         if (LOG.isTraceEnabled()) {                                                       // on TRACE we will print the complete stacktrace but for all other
@@ -102,11 +106,16 @@ public class ClasspathResourceBundleProvider<R extends GameResource, T extends R
                 .toList();
 
         LOG.info("ClasspathResourceBundleProvider: Initialization of resource provider for directory ::= [{}] DONE", directory);
+        initialized = true;
 
     }
 
     @Override
     public List<T> getResourceBundles() {
+        if (!initialized) {
+            throw new IllegalStateException("ClasspathResourceBundleProvider for directory ::= [" + directory + "] was not initialized by calling rhe loadResources() method.");
+        }
+
         return Collections.unmodifiableList(resourceFileContent);
     }
 

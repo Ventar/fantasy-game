@@ -75,7 +75,8 @@ public class MDNSServiceListener implements ServiceListener {
 
     @Override
     public void serviceResolved(ServiceEvent serviceEvent) {
-        LOG.debug("[{}] service resolved event received", serviceType.substring(1, serviceType.indexOf(".")).toUpperCase(Locale.ROOT));
+        LOG.debug("[{}] - service resolved event received for service ::= [{}]", serviceEvent.getInfo().getName(),
+                serviceType.substring(1, serviceType.indexOf(".")).toUpperCase(Locale.ROOT));
         LOG.debug("[{}] - found via MDNS, name ::= [{}], type ::= [{}], addresses ::= [{}], port ::= [{}]",
                 serviceEvent.getInfo().getName(),
                 serviceEvent.getInfo().getName(),

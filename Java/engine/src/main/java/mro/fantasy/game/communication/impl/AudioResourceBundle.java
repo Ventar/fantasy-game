@@ -140,8 +140,16 @@ public class AudioResourceBundle implements ResourceBundle<AudioResource> {
 
         if (resolver == null) {
             LOG.warn("MP3 stream function is null, set default implementation which will throw an exception. This should only be used in conjunction with a SpeechSynthesizer");
-            this.mp3StreamFunction = resource -> {
-                throw new IllegalArgumentException("No implementation available to resolve MP3 streams.");
+            this.mp3StreamFunction = new AudioResourceMP3FileResolver() {
+                @Override
+                public InputStream resolve(AudioResource audioResource) {
+                    throw new IllegalArgumentException("No implementation available to resolve MP3 streams.");
+                }
+
+                @Override
+                public String getStreamInfo(AudioResource audioResource) {
+                    throw new IllegalArgumentException("No implementation available to resolve MP3 streams.");
+                }
             };
         } else {
             this.mp3StreamFunction = resolver;
@@ -175,8 +183,16 @@ public class AudioResourceBundle implements ResourceBundle<AudioResource> {
 
         if (resolver == null) {
             LOG.warn("MP3 stream function is null, set default implementation which will throw an exception. This should only be used in conjunction with a SpeechSynthesizer");
-            this.mp3StreamFunction = resource -> {
-                throw new IllegalArgumentException("No implementation available to resolve MP3 streams.");
+            this.mp3StreamFunction = new AudioResourceMP3FileResolver() {
+                @Override
+                public InputStream resolve(AudioResource audioResource) {
+                    throw new IllegalArgumentException("No implementation available to resolve MP3 streams.");
+                }
+
+                @Override
+                public String getStreamInfo(AudioResource audioResource) {
+                    throw new IllegalArgumentException("No implementation available to resolve MP3 streams.");
+                }
             };
         } else {
             this.mp3StreamFunction = resolver;
@@ -226,9 +242,13 @@ public class AudioResourceBundle implements ResourceBundle<AudioResource> {
                     .stream()
                     .collect(Collectors.toMap(AudioResource::getKey, r -> r));   // create a HashMap with the resource key as key and the resource as value
 
-            LOG.debug("Loaded communication resource bundle ::= [{}] with locale ::= [{}] and ::= [{}] entries", bundleName, locale, resources.size());
+            LOG.info("Loaded communication resource bundle ::= [{}] with locale ::= [{}] and ::= [{}] entries", bundleName, locale, resources.size());
 
             dataInputStream.close();
+
+
+            this.resources.values().forEach(r -> LOG.info("    - {} [{}]", String.format("%-30s", r.getGameId()), mp3StreamFunction.getStreamInfo(r)));
+
         } catch (IllegalArgumentException e) {
             throw e; // simply rethrow.
         } catch (Exception e) {

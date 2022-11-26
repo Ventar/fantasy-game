@@ -3,16 +3,16 @@ package mro.fantasy.game.devices.events.impl;
 import mro.fantasy.game.devices.events.DeviceDataPackage;
 import mro.fantasy.game.devices.events.DeviceEventHandler;
 import mro.fantasy.game.devices.events.DeviceEventService;
+import mro.fantasy.game.engine.events.impl.EventThreadPool;
+import mro.fantasy.game.utils.NetworkConfiguration;
+import mro.fantasy.game.utils.ServiceThread;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.util.List;
 
 /**
@@ -23,8 +23,7 @@ import java.util.List;
  * @since 2022-08-13
  */
 @Service
-//@PropertySource("classpath:application.properties")
-public class UDPDeviceEventServiceImpl extends Thread implements DeviceEventService {
+public class UDPDeviceEventServiceImpl extends ServiceThread implements DeviceEventService {
 
     /**
      * Logger.
@@ -35,24 +34,6 @@ public class UDPDeviceEventServiceImpl extends Thread implements DeviceEventServ
      * Socket to receive data from the devices.
      */
     private DatagramSocket socket;
-
-    /**
-     * UDP port that is used by the {@link UDPDeviceEventServiceImpl} to listen for incoming events.
-     */
-    @Value("${game.event.udp.port}")
-    private int eventUDPPort;
-
-    /**
-     * UDP address that is used by the {@link UDPDeviceEventServiceImpl} to listen for incoming events.
-     */
-    @Value("${game.ip.address}")
-    private String ipAddress;
-
-    /**
-     * Size of the datagram package that is used to read the UDP game events.
-     */
-    @Value("${game.event.udp.buffer.bytes}")
-    private int eventUDPBufferBytes;
 
     /**
      * Event handler which are interested in incoming events from devices.
@@ -67,53 +48,60 @@ public class UDPDeviceEventServiceImpl extends Thread implements DeviceEventServ
     private EventThreadPool executor;
 
     /**
-     * Initializes the event service by creating the datagram socket and starting the service as a background thread.
+     * Network utilities to get IP and MAC address
      */
-    @PostConstruct
-    private void postConstruct() {
+    @Autowired
+    private NetworkConfiguration networkConfiguration;
+
+    @Override
+    public void start() {
         try {
-            LOG.debug("Try to open UDP event listener on  ::= [{}:{}]", ipAddress, eventUDPPort);
-            socket = new DatagramSocket(eventUDPPort, InetAddress.getByName(ipAddress));
+
+            LOG.info("");
+            LOG.info("---------------------------------------------------------------------------------");
+            LOG.info("INITIALIZE DEVICE EVENT SERVICE");
+            LOG.info("---------------------------------------------------------------------------------");
+            LOG.info("");
+
+            LOG.debug("Try to open UDP event listener on  ::= [{}:{}]", networkConfiguration.getAdapterIPAddress(), networkConfiguration.getEventUDPPort());
+            socket = new DatagramSocket(networkConfiguration.getEventUDPPort(), networkConfiguration.getAdapterINetAddress());
             super.setName("DEVICES");
+            super.setLogger(LOG);
             super.start();
             LOG.debug("Started service ::= [{}] with ::= [{}] device event handler", getClass().getSimpleName(), eventHandler.size());
 
         } catch (Exception e) {
             throw new IllegalStateException("Cannot start device event service", e);
         }
+
+        LOG.debug("Device event service successfully initialized...");
     }
 
     /**
      * Opens a UDP socket connection and listen for incoming datagram packets from devices which are connected to the game server.
      */
     @Override
-    public void run() {
-        while (true) {
+    public void work() throws Exception {
+
+        byte[] buf = new byte[networkConfiguration.getEventUDPBufferBytes()];
+        DatagramPacket packet = new DatagramPacket(buf, buf.length);
+        socket.receive(packet);
+
+        LOG.trace("Received UDP packet of length ::= [{}] from ::= [{}]", packet.getLength(), packet.getAddress());
+
+        // pass the incoming data to a new thread to process it there and free up the socket for the next event.
+
+        executor.execute(() -> {
             try {
+                DeviceDataPackage dataPackage = new DeviceDataPackage(packet.getData());
+                LOG.debug("[{}] - Received device event ::= [{}]", dataPackage.getDeviceId(), dataPackage);
 
-                byte[] buf = new byte[eventUDPBufferBytes];
-                DatagramPacket packet = new DatagramPacket(buf, buf.length);
-                socket.receive(packet);
-
-                LOG.trace("Received UDP packet of length ::= [{}] from ::= [{}]", packet.getLength(), packet.getAddress());
-
-                // pass the incoming data to a new thread to process it there and free up the socket for the next event.
-
-                executor.execute(() -> {
-                    try {
-                        DeviceDataPackage dataPackage = new DeviceDataPackage(packet.getData());
-                        LOG.debug("Received device event ::= [{}]", dataPackage);
-
-                        eventHandler.forEach(handler -> handler.handle(dataPackage));    // offer the event to all registered event handler.
-                    } catch (Exception e) {
-                        LOG.debug("Error during processing of UDP event: ", e);
-                    }
-                });
-
+                eventHandler.forEach(handler -> handler.handle(dataPackage));    // offer the event to all registered event handler.
             } catch (Exception e) {
-                LOG.debug("Error during UDP handling", e);
+                LOG.debug("Error during processing of UDP event: ", e);
             }
-        }
+        });
+
     }
 
 }

@@ -1,7 +1,7 @@
 package mro.fantasy.game.devices.player;
 
-import mro.fantasy.game.devices.events.GameEvent;
-import mro.fantasy.game.devices.events.GameEventListener;
+import mro.fantasy.game.engine.events.GameEvent;
+import mro.fantasy.game.engine.events.GameEventListener;
 
 /**
  * Physical controller of a player.

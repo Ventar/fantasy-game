@@ -25,5 +25,9 @@ public interface ResourceBundleProvider<R extends GameResource, T extends Resour
      */
     List<T> getResourceBundles();
 
+    /**
+     * Performs the load operation of resources.
+     */
+    void loadResources();
 
 }

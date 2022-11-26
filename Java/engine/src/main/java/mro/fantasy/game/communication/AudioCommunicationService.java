@@ -1,5 +1,9 @@
 package mro.fantasy.game.communication;
 
+import mro.fantasy.game.communication.impl.AudioResource;
+import mro.fantasy.game.communication.impl.AudioResourceBundle;
+import mro.fantasy.game.resources.ResourceBundleProvider;
+
 import java.util.Locale;
 
 /**
@@ -62,4 +66,13 @@ public interface AudioCommunicationService {
      * @throws IllegalArgumentException if the resource cannot be found variables do not match the resource.
      */
     void playSync(String bundleName, String key, Locale locale, AudioVariable... variables);
+
+    /**
+     * Initialize the service by collection all {@link AudioResource}s which are made available through the {@link ResourceBundleProvider}s and their {@link AudioResourceBundle}s
+     * in a single map for quick access.
+     *
+     * @throws IllegalArgumentException in case multiple resources with the same unique combination of key, bundle and locale are provided by the resource providers.
+     */
+    void loadResources();
+
 }

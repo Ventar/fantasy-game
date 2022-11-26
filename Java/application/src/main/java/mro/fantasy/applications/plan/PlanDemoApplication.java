@@ -1,7 +1,6 @@
 package mro.fantasy.applications.plan;
 
 import mro.fantasy.game.Position;
-import mro.fantasy.game.devices.board.BoardController;
 import mro.fantasy.game.devices.discovery.impl.DeviceDiscoveryServiceImpl;
 import mro.fantasy.game.engine.GameLibrary;
 import mro.fantasy.game.plan.Plan;
@@ -23,8 +22,8 @@ public class PlanDemoApplication implements CommandLineRunner {
     @Autowired
     private PlanDeltaService deltaService;
 
-    @Autowired
-    private BoardController gameBoard;
+    // @Autowired
+    // private BoardController gameBoard;
 
     @Autowired
     private DeviceDiscoveryServiceImpl deviceDiscoveryService;
@@ -35,6 +34,8 @@ public class PlanDemoApplication implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
+
+        library.loadResources();
 
 
         ASCIIPlanRenderer renderer = new ASCIIPlanRenderer();
@@ -50,11 +51,7 @@ public class PlanDemoApplication implements CommandLineRunner {
         renderer.render(origPlan);
         renderer.render(changedPlan);
 
-        System.out.println("Wait for callback....");
 
-        var event = deviceDiscoveryService.waitForEvent();
-
-        System.out.println("Received event: " + event.get());
 
         // PlanImpl plan = (PlanImpl) library.getById("BG001");
         // var planMap = plan.toYAMLMap();

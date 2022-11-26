@@ -1,0 +1,34 @@
+@startuml
+!theme spacelab
+skinparam BackgroundColor #2B2B2B
+skinparam linetype ortho
+
+
+interface DeviceEventHandler << Interface >> {
+    + handle(DeviceDataPackage) : void
+}
+
+interface GameEventListener<E extends GameEvent> << Interface >> {
+    + onEvent(E) : void
+}
+
+interface GameEventProducer<E extends GameEvent,\n L extends GameEventListener> << Interface >> {
+    + addListener(E) : void
+    + removeListener(E) : void
+    + waitForEvent() : E
+}
+
+interface GameEvent << Interface >> {}
+
+interface DeviceEventService << Interface >> {}
+class DeviceDataPackage {}
+
+GameEventProducer <-- GameEventListener : registers
+GameEventProducer --o DeviceEventHandler : implements
+GameEventProducer --> GameEvent : creates
+GameEvent .. GameEventListener : processes
+DeviceEventService --* DeviceEventHandler : @Auowired
+DeviceEventHandler -- DeviceDataPackage : handles
+
+
+@enduml

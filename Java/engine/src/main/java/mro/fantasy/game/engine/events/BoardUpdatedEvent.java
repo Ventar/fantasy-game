@@ -1,14 +1,13 @@
-package mro.fantasy.game.devices.board;
+package mro.fantasy.game.engine.events;
 
-import mro.fantasy.game.devices.events.GameEvent;
-import mro.fantasy.game.devices.events.GameEventListener;
+import mro.fantasy.game.Position;
 
 import java.util.List;
 
 /**
- * Listener that is triggered when an event from a {@link BoardController} is received. The physical game board has 4 HAL sensors (detect magnetic fields) for every field and 4 magnets
- * to keep tiles on top of the fields in place. The scenic tiles which are placed on top of a field have the same 4 magnets to keep them in place and one or more additional ones to
- * activate the HAL sensors.
+ * Listener that is triggered when an event from a physicl board module is received. The physical game board has 4 HAL sensors (detect magnetic fields) for every field and 4
+ * magnets to keep tiles on top of the fields in place. The scenic tiles which are placed on top of a field have the same 4 magnets to keep them in place and one or more additional
+ * ones to activate the HAL sensors.
  * <pre>{@code
  *    Field                     Player Scenic Tile
  *   ┌─────────────────────┐    ┌─────────────────────┐
@@ -39,19 +38,19 @@ import java.util.List;
  * @author Michael Rodenbuecher
  * @since 2022-08-12
  */
-public interface BoardControllerEventListener extends GameEventListener<BoardControllerEventListener.BoardEvent> {
+public interface BoardUpdatedEvent extends GameEvent {
+
 
     /**
      * Information about an updated field.
      *
-     * @param row          the row of this field on the board.
-     * @param column       the column of this field on the board.
+     * @param position     the position of the field in the coordinate system of the {@link mro.fantasy.game.devices.board.GameBoard}
      * @param northEnabled if the northern HAL sensor is enabled
      * @param eastEnabled  if the eastern HAL sensor is enabled
      * @param southEnabled if the southern HAL sensor is enabled
      * @param westEnabled  if the western HAL sensor is enabled
      */
-    record FieldUpdate(int column, int row, boolean northEnabled, boolean eastEnabled, boolean southEnabled, boolean westEnabled) {
+    record FieldUpdate(Position position, boolean northEnabled, boolean eastEnabled, boolean southEnabled, boolean westEnabled) {
 
         /**
          * Returns if any sensor is enabled. Can be used in case the direction is not important. Used for the placement of scenic tiles that spawn multiple fields for example.
@@ -65,13 +64,12 @@ public interface BoardControllerEventListener extends GameEventListener<BoardCon
     }
 
     /**
-     * Event triggered when a field on the passed board was updated, i.e. if one of the four HAL sensor changed its state from off (no magnet detected) to on (magnet detected) or
-     * vice versa.
+     * Returns a list of fields which were updated for the game board. This is usually a delta update, i.e. only the changed fields are transferred. However, the internal data
+     * model of the server has the complete state of the game board. That means you can always use the {@link mro.fantasy.game.devices.board.GameBoard} to retrieve all needed
+     * information.
      *
-     * @param board         the game board
-     * @param updatedFields the updated fields
+     * @return the changed fields
      */
-    record BoardEvent(BoardController board, List<FieldUpdate> updatedFields) implements GameEvent {}
-
+    List<FieldUpdate> getUpdatedFields();
 
 }

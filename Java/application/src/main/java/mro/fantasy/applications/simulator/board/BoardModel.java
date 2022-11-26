@@ -1,11 +1,11 @@
 package mro.fantasy.applications.simulator.board;
 
-import mro.fantasy.game.plan.Field;
 import org.springframework.stereotype.Component;
 
 import java.awt.*;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -54,6 +54,28 @@ public class BoardModel {
     }
 
     /**
+     * Sets the color of the LED at the given column and row.
+     *
+     * @param column the row
+     * @param row    the column
+     * @param color  the color to set
+     */
+    public void setColor(int column, int row, Color color) {
+        fields[column][row].setLedColor(color);
+    }
+
+    /**
+     * Clears all colors of the board.
+     */
+    public void clearColors() {
+        for (int column = 0; column < Configuration.COLUMNS; column++) {
+            for (int row = 0; row < Configuration.ROWS; row++) {
+                fields[column][row].setLedColor(Color.BLACK);
+            }
+        }
+    }
+
+    /**
      * Returns the polygon of the HAL sensor for the given x and y coordinates where x and y are the pixels in the coordinate system of the board.
      *
      * @param x the x value
@@ -88,8 +110,11 @@ public class BoardModel {
      *
      * @return the list of modified fields
      */
-    public List<Field> getChangedFields(long since) {
-        return null;
+    public List<BoardField> getChangedFields(long since) {
+        return Arrays.stream(fields)                               // for all columns
+                .flatMap(colEntry -> Arrays.stream(colEntry))      // and all rows
+                .filter(f -> f.getLastChange() > since)            // find the fields which were modified after the passed date
+                .collect(Collectors.toList());
     }
 
 }

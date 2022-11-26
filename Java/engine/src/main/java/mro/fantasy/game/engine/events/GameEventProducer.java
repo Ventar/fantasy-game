@@ -1,4 +1,4 @@
-package mro.fantasy.game.devices.events;
+package mro.fantasy.game.engine.events;
 
 import java.util.concurrent.Future;
 

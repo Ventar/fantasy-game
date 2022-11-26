@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
 import java.util.*;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -60,17 +59,19 @@ public class AudioCommunicationServiceImpl implements AudioCommunicationService 
     private Map<ResourceKey, AudioResource> resourceMap;
 
     /**
-     * Initialize the service by collection all {@link AudioResource}s which are made available through the {@link ResourceBundleProvider}s and their {@link AudioResourceBundle}s
-     * in a single map for quick access.
-     *
-     * @throws IllegalArgumentException in case multiple resources with the same unique combination of key, bundle and locale are provided by the resource providers.
+     * Indicator if the {@link #loadResources()} method of this class was executed once. If not an exception is thrown.
      */
-    @PostConstruct
-    private void postConstruct() {
+    private boolean initialized;
+
+
+    @Override
+    public void loadResources() {
 
         if (resourceProvider == null) {     // Should not happen because of the default classpath provider
             return;
         }
+
+        this.resourceProvider.forEach(p -> p.loadResources());
 
         resourceMap = resourceProvider.stream()                                         // iterate over all resource provider
                 .map(ResourceBundleProvider::getResourceBundles)                        // fetch all available audio resource bundles from that provider
@@ -86,15 +87,32 @@ public class AudioCommunicationServiceImpl implements AudioCommunicationService 
 
         LOG.debug("Created new AudioCommunicationService with ::= [{}] audio resources", resourceMap.size());
 
+        if (resourceMap.isEmpty()) {
+            LOG.warn("\n\n !!! No audio files were found to play back by the AudioCommunicationService !!! \n\n");
+        }
+
+    }
+
+    /**
+     * Method to check if the resources were loaded by calling the {@link #loadResources()} method
+     *
+     * @throws IllegalStateException if the method was not called
+     */
+    private void checkInitialization() {
+        if (!initialized) {
+            throw new IllegalStateException("AudioCommunicationService was not initialized by calling the loadResources() method.");
+        }
     }
 
     @Override
     public void play(String bundleName, String key, Locale locale, AudioCommunicationService.AudioVariable... variables) {
+        checkInitialization();
         play(bundleName, key, locale, false, variables);
     }
 
     @Override
     public void playSync(String bundleName, String key, Locale locale, AudioCommunicationService.AudioVariable... variables) {
+        checkInitialization();
         play(bundleName, key, locale, true, variables);
     }
 
@@ -111,7 +129,7 @@ public class AudioCommunicationServiceImpl implements AudioCommunicationService 
      */
     private void play(String bundleName, String key, Locale locale, boolean sync, AudioVariable... variables) {
 
-        LOG.debug("Try to play audio resource with bundle :Ö:= [{}], key ::= [{}], locale ::= [{}], sync ::= [{}], variables ::= [{}]", bundleName, key, locale.getLanguage(),
+        LOG.debug("Try to play audio resource with bundle ::= [{}], key ::= [{}], locale ::= [{}], sync ::= [{}], variables ::= [{}]", bundleName, key, locale.getLanguage(),
                 sync, variables);
 
         ValidationUtils.requireNonNull(bundleName, "The parameter bundeName cannot be null");

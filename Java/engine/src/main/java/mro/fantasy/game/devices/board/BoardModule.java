@@ -1,5 +1,10 @@
 package mro.fantasy.game.devices.board;
 
+import mro.fantasy.game.Position;
+import mro.fantasy.game.Size;
+import mro.fantasy.game.devices.board.impl.BoardFieldImpl;
+import mro.fantasy.game.devices.impl.Color;
+
 /**
  * Represents a physical board module.
  * <p>
@@ -52,5 +57,52 @@ package mro.fantasy.game.devices.board;
  * @since 2022-08-19
  */
 public interface BoardModule {
+
+    /**
+     * Returns the size, i.e. number {@link BoardFieldImpl}s in columns and rows, of this module
+     *
+     * @return the size
+     */
+    Size getSize();
+
+    /**
+     * Returns the board field at the given position
+     *
+     * @param position the position
+     *
+     * @return the field.
+     */
+    BoardField getField(Position position);
+
+    /**
+     * Clears all colors on the physical module. The UDP message is send immediately to the module. If the {@link #setColor(Position, Color)} was used without sending the data with
+     * the {@link #sendColorUpdate(boolean)} method, the colors will be cleared.
+     */
+    void clearColors();
+
+    /**
+     * Returns the unique ID of the board module.
+     */
+    String getId();
+
+    /**
+     * Changes the color of the field of the given position. The transmission of this information to the physical module is not triggered automatically but started when the {@link
+     * #sendColorUpdate(boolean)} method is called. This will allow the caller to set multiple colors which are sent with one UDP datagram packet.
+     *
+     * @param position the position to set
+     * @param color    the new color. A color of {@link Color#OFF} which is essentially BLACK will turn off the LED
+     *
+     * @throws IllegalArgumentException in case a passed parameter is {@code null} or the passed position does not exist on the module
+     * @see #sendColorUpdate(boolean)
+     */
+    void setColor(Position position, Color color);
+
+    /**
+     * Sends the update of all colors which were changed with the {@link #setColor(Position, Color)} since the last call to {@link #setColor(Position, Color)} or {@link
+     * #clearColors()}.
+     *
+     * @param clear if the board leds should be cleared before setting the new ones.
+     */
+    void sendColorUpdate(boolean clear);
 
 }

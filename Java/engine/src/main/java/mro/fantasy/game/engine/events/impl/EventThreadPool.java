@@ -1,5 +1,6 @@
-package mro.fantasy.game.devices.events.impl;
+package mro.fantasy.game.engine.events.impl;
 
+import mro.fantasy.game.devices.events.impl.UDPDeviceEventServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;
@@ -16,7 +17,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  * new one in every service that needs to support multithreaded code execution.
  *
  * @author Michael Rodenbuecher
- * @see AbstractGameEventProducer
  * @see UDPDeviceEventServiceImpl
  * @since 2022-08-13
  */

@@ -2,25 +2,25 @@ package mro.fantasy.game.devices.discovery.impl;
 
 import mro.fantasy.game.devices.board.BoardModule;
 import mro.fantasy.game.devices.board.impl.BoardModuleImpl;
-import mro.fantasy.game.devices.discovery.DeviceDiscoveryEvent;
-import mro.fantasy.game.devices.discovery.DeviceDiscoveryEventListener;
 import mro.fantasy.game.devices.discovery.DeviceDiscoveryService;
-import mro.fantasy.game.devices.events.impl.EventCallback;
-import mro.fantasy.game.devices.events.impl.EventThreadPool;
 import mro.fantasy.game.devices.events.impl.UDPDeviceEventServiceImpl;
+import mro.fantasy.game.engine.events.impl.EventThreadPool;
+import mro.fantasy.game.utils.NetworkConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
 import javax.jmdns.JmDNS;
 import java.io.IOException;
 import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import static mro.fantasy.game.devices.discovery.impl.MDNSServiceListener.registerMDNSListener;
 
@@ -40,31 +40,29 @@ public class DeviceDiscoveryServiceImpl implements DeviceDiscoveryService {
     private static final Logger LOG = LoggerFactory.getLogger(DeviceDiscoveryServiceImpl.class);
 
     /**
-     * IP address that is used to start the {@link JmDNS} listener.
+     * UDP port that is used by the {@link UDPDeviceEventServiceImpl} to listen for incoming events.Milliseconds the device discovery service will wait to discover physical board
+     * modules
      */
-    @Value("${game.ip.address}")
-    private String serverIPAddress;
-
-    @Value("${game.mac.address}")
-    private String serverMacAddress;
+    @Value("${game.device.board.scan.time.ms}")
+    private int scanTimeout;
 
     /**
-     * UDP port that is used by the {@link UDPDeviceEventServiceImpl} to listen for incoming events.
+     * Number of boards which is expected by the discovery service. The service will wait for these boards before ending the scan process.
      */
-    @Value("${game.event.udp.port}")
-    private int serverUDPPort;
+    @Value("${game.device.board.count}")
+    private int numberOfBoards;
 
     /**
-     * Size of the datagram package that is used to read the UDP game events.
-     */
-    @Value("${game.event.udp.buffer.bytes}")
-    private int eventUDPBufferBytes;
-
-    /**
-     * Threadpool to handle device related tasks.
+     * Threadpool to manage the discovery future.
      */
     @Autowired
-    private EventThreadPool executor;
+    protected EventThreadPool executor;
+
+    /**
+     * Network utilities to get IP and MAC address
+     */
+    @Autowired
+    private NetworkConfiguration networkConfiguration;
 
     /**
      * Socket to send out data to the devices via UDP
@@ -72,47 +70,65 @@ public class DeviceDiscoveryServiceImpl implements DeviceDiscoveryService {
     protected DatagramSocket socket;
 
     /**
-     * Set with registered Listeners
-     */
-    private Set<DeviceDiscoveryEventListener> listenerSet = new HashSet<>();
-
-    /**
-     * A list of futures that wait to be resolved.
-     */
-    private List<EventCallback> callbacks = new ArrayList<>();
-
-
-    /**
      * A set of board modules that was discoverd by the {@link #jmdns} service.
      */
-    private Set<BoardModule> boardModule = new HashSet<>();
+    private Set<BoardModule> boardModules = new HashSet<>();
 
     /**
      * The implementation utility class for the mDNS service.
      */
     private JmDNS jmdns;
 
-    /**
-     * Starts the discovery of physical devices.
-     *
-     * @throws IOException if the discovery  process cannot be started.
-     */
-    @PostConstruct
-    public void start() throws IOException {
-        LOG.debug("Start discovery service on network adapter ::= [{}]", serverIPAddress);
+    @Override
+    public void scan() throws IOException {
+
+        LOG.info("");
+        LOG.info("---------------------------------------------------------------------------------");
+        LOG.info("DEVICE DISCOVERY");
+        LOG.info("---------------------------------------------------------------------------------");
+        LOG.info("");
+
+        LOG.info("Start discovery service on network adapter ::= [{}]", networkConfiguration.getAdapterIPAddress());
+
+
+        // The future must be defined here to ensure that the MDNS discovery will work.
+        Future discoveryFuture = executor.submit(new Runnable() {
+            @Override
+            public void run() {
+                while (true) {
+                    try {
+                        Thread.sleep(200);
+                    } catch (InterruptedException e) {
+                        LOG.warn("Device discovery Future was interrupted: ", e);
+                    }
+                    if (boardModules.size() == numberOfBoards) {
+                        return;
+                    }
+                }
+            }
+        });
 
         this.socket = new DatagramSocket();
 
-        jmdns = JmDNS.create(InetAddress.getByName(serverIPAddress));
+        jmdns = JmDNS.create(networkConfiguration.getAdapterINetAddress());
 
         registerMDNSListener(jmdns, BOARD_MDNS_TYPE, (serviceEvent) -> {
 
             try {
-                BoardModuleImpl bordModule = new BoardModuleImpl(serviceEvent.getName(), serviceEvent.getInfo().getInetAddresses()[0], serviceEvent.getInfo().getPort());
-                bordModule.sendRegister(serverMacAddress, serverIPAddress, serverUDPPort);
+                BoardModuleImpl boardModule = new BoardModuleImpl(serviceEvent.getName(), serviceEvent.getInfo().getInetAddresses()[0], serviceEvent.getInfo().getPort());
+
+                if (boardModules.contains(boardModule)) {
+                    LOG.debug("[{}] - module with the given ID was already registered, skip registration...", boardModule.getId());
+                    return;
+                }
+
+                boardModule.sendRegister("SERVER", networkConfiguration.getAdapterIPAddress(), networkConfiguration.getEventUDPPort());
+                boardModules.add(boardModule);
+                LOG.info("[{}] - found board module ::= [{}]", boardModule.getId(), boardModule);
             } catch (IOException e) {
                 LOG.warn("Cannot register board module with id ::= [{}]:", serviceEvent.getName(), e);
             }
+
 
         });
 
@@ -121,26 +137,35 @@ public class DeviceDiscoveryServiceImpl implements DeviceDiscoveryService {
             // ctrl.sendRegisterListenerMessage(StaticConfig.LOCAL_IP_ADDRESS, StaticConfig.UDP_PORT_CONTROLLER_EVENT);
             // ctrl.sendLEDState(Color.OFF);
             // playerController.add(ctrl);
-
-            DeviceDiscoveryEvent event = new DeviceDiscoveryEvent();
-
-            listenerSet.stream().forEach(listener -> listener.onEvent(event));
-            callbacks.forEach(c -> c.setEvent(event));
-            callbacks.clear();
-
         });
+
+        try {
+            discoveryFuture.get(scanTimeout, TimeUnit.MILLISECONDS);
+        } catch (Exception e) {
+            LOG.warn("\n\n !!! Device Discovery was not successful, found ::= [{} / {}] board modules !!! \n\n", boardModules.size(), numberOfBoards);
+        }
+
+        stop();
+
+        LOG.debug("Device discovery initialization successful finished...");
 
     }
 
+    @Override
+    public Optional<BoardModule> getBoardModuleById(String id) {
+        if (boardModules.isEmpty()) {
+            throw new IllegalStateException("No board modules are known by the service.");
+        }
 
-    /**
-     * Stops the MDNS device discovery process.
-     */
+        return boardModules.stream().filter(m -> m.getId().equals(id)).findFirst();
+    }
+
     public void stop() {
         if (jmdns != null) {
             try {
                 jmdns.close();
                 jmdns = null;
+                LOG.info("Stopped discovery service on network adapter ::= [{}]", networkConfiguration.getAdapterIPAddress());
             } catch (Exception e) {
                 LOG.debug("Exception during stop of discovery service:", e);
             }
@@ -148,26 +173,8 @@ public class DeviceDiscoveryServiceImpl implements DeviceDiscoveryService {
     }
 
     @Override
-    public Set<BoardModule> getBoardModules() {
-        return Collections.unmodifiableSet(boardModule);
+    public List<BoardModule> getBoardModules() {
+        return List.copyOf(boardModules);
     }
 
-    @Override
-    public void registerListener(DeviceDiscoveryEventListener listener) {
-        LOG.debug("Added event listener ::= [{}] from ::= [{}]", listener, getClass().getSimpleName());
-        listenerSet.add(listener);
-    }
-
-    @Override
-    public void removeListener(DeviceDiscoveryEventListener listener) {
-        LOG.debug("Removed event listener ::= [{}] from ::= [{}]", listener, getClass().getSimpleName());
-        listenerSet.remove(listener);
-    }
-
-    @Override
-    public Future<DeviceDiscoveryEvent> waitForEvent() {
-        var callback = new EventCallback();
-        callbacks.add(callback);
-        return executor.submit(callback);
-    }
 }

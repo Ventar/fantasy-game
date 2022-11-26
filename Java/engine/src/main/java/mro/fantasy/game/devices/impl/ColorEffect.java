@@ -1,4 +1,4 @@
-package mro.fantasy.game.engine.board.model;
+package mro.fantasy.game.devices.impl;
 
 /**
  * Effect on the game board for the LEDs.
@@ -8,7 +8,6 @@ package mro.fantasy.game.engine.board.model;
  */
 public enum ColorEffect {
 
-    NONE(0),
     FIXED_COLOR(1),
     RED_FLAME(2),
     GREEN_FLAME(3),

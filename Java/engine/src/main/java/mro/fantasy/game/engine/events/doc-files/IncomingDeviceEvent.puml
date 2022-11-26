@@ -1,0 +1,21 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+!theme spacelab
+skinparam backgroundColor #2B2B2B
+
+autonumber
+
+participant "Service" as SEE
+participant GameEventProducer as GEP
+participant DeviceEventService as DES
+participant Device as DEV
+
+SEE -> GEP : registerListener()
+DES -> GEP : @Autowired
+DEV -> DES : send UDP datagram
+DES -> DES : convert to DeviceDataPackage
+DES -> GEP : handle()
+GEP -> GEP : if interested\nconvert to GameEvent
+GEP -> SEE : onEvent()
+
+@enduml

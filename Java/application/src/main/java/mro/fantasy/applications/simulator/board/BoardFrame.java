@@ -35,6 +35,18 @@ public class BoardFrame extends JFrame {
     private String deviceId;
 
     /**
+     * The X location of the board frame on the screen,measured from theupper left corner of the screen.
+     */
+    @Value("${board.location.x:0}")
+    private int locationX;
+
+    /**
+     * The X location of the board frame on the screen,measured from theupper left corner of the screen.
+     */
+    @Value("${board.location.y:0}")
+    private int locationY;
+
+    /**
      * The model data.
      */
     @Autowired
@@ -55,8 +67,8 @@ public class BoardFrame extends JFrame {
             UIManager.setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel");
         } catch (Exception ignored) {}
 
-
         SwingUtilities.invokeLater(this::createAndShowGUI);
+        setName("BoardModuleFrame");
     }
 
     /**
@@ -64,14 +76,12 @@ public class BoardFrame extends JFrame {
      */
     private void createAndShowGUI() {
 
-
         setTitle("Board Module " + deviceId);
         setResizable(false);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocation(200, 200);
+        setLocation(locationX, locationY);
         setPreferredSize(new Dimension(Configuration.COLUMNS * (Configuration.FIELD_SIZE_PX + 2) + 3, Configuration.ROWS * (Configuration.FIELD_SIZE_PX + 2) + 25));
         setContentPane(new PaintPane());
-
 
         addMouseMotionListener(new MouseMotionAdapter() {
             @Override
@@ -107,8 +117,8 @@ public class BoardFrame extends JFrame {
 
             @Override
             public void mouseExited(MouseEvent e) {
-                LOG.debug("Mouse exited: {}", e.getComponent().getName());
-                if (e.getComponent().equals(this)) {
+                // If the mouse leaves the frame, we do not want to show the highlighted sensor.
+                if (e.getComponent().getName().equals("BoardModuleFrame")) {
                     lastPolygon = null;
                     repaint();
                 }
@@ -119,7 +129,6 @@ public class BoardFrame extends JFrame {
         setVisible(true);
 
     }
-
 
     /**
      * Panel to paint the board.

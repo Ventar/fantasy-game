@@ -46,6 +46,8 @@ public class DefaultResourceLibrary<T extends GameResource> implements ResourceL
             return;
         }
 
+        this.resourceProvider.forEach(p -> p.loadResources());
+
         this.resources = resourceProvider.stream()                                      // iterate over all resource provider
                 .map(ResourceBundleProvider::getResourceBundles)                        // fetch all available resources bundles from that provider
                 .flatMap(Collection::stream)

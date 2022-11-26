@@ -1,4 +1,4 @@
-package mro.fantasy.game.engine.board.model;
+package mro.fantasy.game.devices.impl;
 
 /**
  * Color of a LED

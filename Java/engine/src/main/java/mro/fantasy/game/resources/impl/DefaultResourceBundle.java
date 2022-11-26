@@ -75,7 +75,9 @@ public final class DefaultResourceBundle<T extends GameResource> implements Reso
 
             this.name = YAMLUtilities.getMandatory(map, "bundleName");
 
-            LOG.debug("Created resource bundle ::= [{}] with ::= [{}] resource entries", this.name,yamlResources.size());
+            LOG.info("Created resource bundle ::= [{}] with ::= [{}] resource entries", this.name,yamlResources.size());
+
+            this.resources.values().forEach(r -> LOG.info("    - {} {}", r.getGameId(), r.getName()));
 
         } catch (IOException e) {
             LOG.warn("Cannot load resource bundle from resource ::= [{}]: ", resources, e);

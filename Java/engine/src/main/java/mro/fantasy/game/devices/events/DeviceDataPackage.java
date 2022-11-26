@@ -1,11 +1,13 @@
 package mro.fantasy.game.devices.events;
 
-import mro.fantasy.game.devices.DeviceType;
+import mro.fantasy.game.devices.impl.DeviceType;
 import mro.fantasy.game.utils.Condition;
 import mro.fantasy.game.utils.ValidationUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.HexFormat;
 import java.util.stream.IntStream;
 
 /**
@@ -13,9 +15,9 @@ import java.util.stream.IntStream;
  * following structure:
  *
  * <pre>{@code
- * part -  | HEADER                                        |  DATA
- * byte -  |  0  - 6               | 7           | 8       |  [9+]
- * data -  | device MAC Address    | device Type | eventId |  [data]
+ * part -  | HEADER                               |  DATA
+ * byte -  |  0  - 5      | 6           | 7       |  [8+]
+ * data -  | device ID    | device Type | eventId |  [data]
  * } </pre>
  * <p>
  * The MAC address is used to identify the device uniquely within the game system, the {@link DeviceType} is used to distribute the event to the correct handler and allows in
@@ -28,6 +30,11 @@ import java.util.stream.IntStream;
  * @since 2022-08-15
  */
 public class DeviceDataPackage {
+
+    /**
+     * Logger.
+     */
+    private static final Logger LOG = LoggerFactory.getLogger(DeviceDataPackage.class);
 
     /**
      * The raw datagram content.
@@ -68,13 +75,17 @@ public class DeviceDataPackage {
 
         // the next part can only retrieve the data, additional validation must be done by the event handler.
 
-        Condition.of(datagram.length > 8).ifTrue(() -> this.data = Arrays.copyOfRange(datagram, 9, datagram.length));  // data
-        IntStream.range(0, 5).forEach(i -> this.deviceId += String.format("%02X", datagram[i]));                            // deviceId
+        Condition.of(datagram.length > 8).ifTrue(() -> this.data = Arrays.copyOfRange(datagram, 8, datagram.length));  // data
+
+        this.deviceId = new String(Arrays.copyOfRange(datagram, 0, 6));
+
         this.deviceType = DeviceType.fromInteger(datagram[6]);                                                              // deviceType
-        this.eventId = Byte.toUnsignedInt(datagram[7]);                                                                    // eventId
+        this.eventId = Byte.toUnsignedInt(datagram[7]);                                                                     // eventId
         this.raw = datagram;
         this.data = new byte[raw.length - 8];
-        System.arraycopy(raw, 8, this.data, 0, raw.length - 8);              // data
+        System.arraycopy(raw, 8, this.data, 0, raw.length - 8);                                         // data
+
+        LOG.trace("[{}] - created device data package of size ::= [{}]", deviceId, raw.length);
 
     }
 
@@ -85,20 +96,30 @@ public class DeviceDataPackage {
      * @param deviceId   The unique device ID which is represented by the MAC address of the device.
      * @param eventId    The ID of the event that is sent by the device. Every device can send different events where the following data in the byte stream depends on the event id
      *                   that was sent.
-     * @param data
+     * @param data       the actual data that is send after the header, can be {@code null}
      */
     public DeviceDataPackage(DeviceType deviceType, String deviceId, int eventId, byte[] data) {
+
+        if (deviceId == null || deviceId.length() != 6) {
+            throw new IllegalArgumentException("The device ID ::= [" + deviceId + "] has to have 6 letters");
+        }
+
         this.deviceType = deviceType;
         this.deviceId = deviceId;
         this.eventId = eventId;
-        this.data = data;
+
+        var bytesDeviceId = this.deviceId.getBytes(StandardCharsets.UTF_8);
+
+        // if no data was set because the event is sufficient, we simply send a 0 to make the code on this side easier.
+        this.data = data == null ? new byte[]{0} : data;
 
         this.raw = new byte[8 + data.length];
-        byte[] rawDeviceId = HexFormat.of().parseHex(deviceId);
-        IntStream.range(0, 5).forEach(i -> raw[i] = rawDeviceId[i]);                    // device ID
+        IntStream.range(0, 6).forEach(i -> this.raw[i] = bytesDeviceId[i] );           // device ID
         this.raw[6] = (byte) deviceType.getTypeId();                                    // deviceType
         this.raw[7] = (byte) eventId;                                                   // eventId
         System.arraycopy(data, 0, this.raw, 8, data.length);              // data
+
+        LOG.trace("[{}] - created device data package of size ::= [{}]", deviceId, raw.length);
     }
 
 
@@ -140,6 +161,15 @@ public class DeviceDataPackage {
     }
 
     /**
+     * Converts the {@link #getEventId()} into the corresponding enum value
+     *
+     * @return the type
+     */
+    public DeviceMessageType getEventType() {
+        return DeviceMessageType.fromID(getEventId());
+    }
+
+    /**
      * Returns the complete raw data of the datagram packet.
      *
      * @return the raw data
@@ -150,10 +180,10 @@ public class DeviceDataPackage {
 
     @Override
     public String toString() {
-        return "DeviceEventDataPackage{" +
+        return "DeviceDataPackage{" +
                        "deviceType=" + deviceType +
                        ", deviceId='" + deviceId + '\'' +
-                       ", eventId=" + eventId +
+                       ", eventId=" + DeviceMessageType.fromID(eventId) +
                        '}';
     }
 }

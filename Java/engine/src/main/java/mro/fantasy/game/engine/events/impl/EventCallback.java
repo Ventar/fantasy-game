@@ -1,15 +1,16 @@
-package mro.fantasy.game.devices.events.impl;
+package mro.fantasy.game.engine.events.impl;
 
 
-import mro.fantasy.game.devices.events.GameEvent;
+import mro.fantasy.game.engine.events.GameEventProducer;
 
 import java.util.concurrent.Callable;
 
 /**
- * Callback that is resolved when an event was set with the {@link #setEvent(GameEvent)}} method.
+ * Callback that is resolved when an event was received for which another component was waiting.
  *
  * @author Michael Rodenbuehcer
  * @since 2022-08-13
+ * @see GameEventProducer#waitForEvent()
  */
 public class EventCallback<E> implements Callable<E> {
 

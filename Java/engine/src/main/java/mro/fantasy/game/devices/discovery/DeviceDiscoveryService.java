@@ -1,9 +1,10 @@
 package mro.fantasy.game.devices.discovery;
 
 import mro.fantasy.game.devices.board.BoardModule;
-import mro.fantasy.game.devices.events.GameEventProducer;
 
-import java.util.Set;
+import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Service that uses the MDNS protocol to discover physical devices. The discovery service is used by the device controllers to get access the physical devices. Most of them
@@ -12,7 +13,7 @@ import java.util.Set;
  * @author Michael Rodenbuecher
  * @since 2022-08-19
  */
-public interface DeviceDiscoveryService extends GameEventProducer<DeviceDiscoveryEvent, DeviceDiscoveryEventListener> {
+public interface DeviceDiscoveryService {
 
     /**
      * MDNS type of  {@link BoardModule}.
@@ -29,7 +30,25 @@ public interface DeviceDiscoveryService extends GameEventProducer<DeviceDiscover
      *
      * @return
      */
-    Set<BoardModule> getBoardModules();
+    List<BoardModule> getBoardModules();
+
+    /**
+     * Returns the board module with the given id.
+     *
+     * @param id the ID
+     *
+     * @return the module if it exists
+     *
+     * @throws IllegalStateException if no board modules were registered
+     */
+    Optional<BoardModule> getBoardModuleById(String id);
+
+    /**
+     * Starts the discovery of physical devices.
+     *
+     * @throws IOException if the discovery  process cannot be started.
+     */
+    void scan() throws IOException;
 
 
 }
