@@ -1,0 +1,41 @@
+@startuml
+!theme spacelab
+skinparam BackgroundColor #2B2B2B
+skinparam linetype ortho
+
+
+interface BoardUpdatedEvent << Interface >> {
+     Event that is send out when the HAL sensor state of
+     the GameBoard has changed
+     + getUpdatedFields(): List<FieldUpdate>
+}
+
+interface GameEvent << Interface >> {
+    Marker interface for all events which are
+    handled by the engine
+    ----
+}
+
+BoardUpdatedEvent --o GameEvent : implements
+
+interface GameEventListener<E extends GameEvent> << Interface >> {
+    Listener that can be registered at a event producer to
+    react on events which are produced by it
+    + onEvent(E) : void
+}
+
+interface GameEventProducer<E extends GameEvent,\n L extends GameEventListener> << Interface >> {
+    A component that is responsible for sending out events to listeners.
+    + addListener(E) : void
+    + removeListener(E) : void
+    + waitForEvent() : E
+}
+
+GameEventProducer <-- GameEventListener : registers
+
+GameEventProducer --> GameEvent : creates
+GameEvent .. GameEventListener : processes
+
+
+
+@enduml
