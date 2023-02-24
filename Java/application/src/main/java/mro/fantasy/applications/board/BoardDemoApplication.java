@@ -50,7 +50,7 @@ public class BoardDemoApplication implements CommandLineRunner {
         LOG.debug("Wait for device discovery service");
         deviceDiscoveryService.scan();
         deviceEventService.start();
-        gameBoard.setup(deviceDiscoveryService.getBoardModules(), true);
+        //gameBoard.setup(deviceDiscoveryService.getBoardModules(), true);
 
         LOG.info("");
         LOG.info("---------------------------------------------------------------------------------");
@@ -58,8 +58,8 @@ public class BoardDemoApplication implements CommandLineRunner {
         LOG.info("---------------------------------------------------------------------------------");
         LOG.info("");
 
-        gameBoard.setColor(new Position(3, 3), Color.BLUE);
-        gameBoard.sendColorUpdate(false);
+        //gameBoard.setColor(new Position(3, 3), Color.BLUE);
+        //gameBoard.sendColorUpdate(false);
 
         BoardModuleRenderer renderer = new BoardModuleRenderer();
         gameBoard.registerListener(event -> renderer.render(gameBoard));

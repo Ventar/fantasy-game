@@ -1,6 +1,6 @@
 package mro.fantasy.applications.simulator.board;
 
-import mro.fantasy.game.devices.events.DeviceDataPackage;
+import mro.fantasy.game.devices.events.DeviceMessage;
 import mro.fantasy.game.devices.events.DeviceEventHandler;
 import mro.fantasy.game.devices.events.DeviceMessageType;
 import mro.fantasy.game.devices.events.impl.UDPDeviceEventServiceImpl;
@@ -13,10 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.awt.*;
-import java.io.IOException;
-import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.util.List;
 
 /**
@@ -98,7 +95,7 @@ public class BoardUDPController extends ServiceThread implements DeviceEventHand
 
 
     @Override
-    public void handle(DeviceDataPackage eventData) {
+    public void handle(DeviceMessage eventData) {
 
         byte[] data = eventData.getData();
 
@@ -177,19 +174,19 @@ public class BoardUDPController extends ServiceThread implements DeviceEventHand
      * @param data  the event data
      *
      * @see UDPDeviceEventServiceImpl
-     * @see DeviceDataPackage
+     * @see DeviceMessage
      */
     public void sendData(DeviceMessageType event, byte[] data) {
-        DeviceDataPackage dataPackage = new DeviceDataPackage(deviceType, deviceId, event.getEventId(), data);
-
-        LOG.debug("Try to send data package ::= [{}]", dataPackage);
-
-        try {
-            DatagramPacket datagramPacket = new DatagramPacket(dataPackage.getRaw(), dataPackage.getRaw().length, InetAddress.getByName(serverAddress), serverPort);
-            socket.send(datagramPacket);
-        } catch (IOException e) {
-            LOG.warn("Could not send data package ::= [{}]:", dataPackage, e);
-        }
+        // DeviceDataPackage dataPackage = new DeviceDataPackage(deviceType, deviceId, event.getEventId(), data);
+        //
+        // LOG.debug("Try to send data package ::= [{}]", dataPackage);
+        //
+        // try {
+        //     DatagramPacket datagramPacket = new DatagramPacket(dataPackage.getRaw(), dataPackage.getRaw().length, InetAddress.getByName(serverAddress), serverPort);
+        //     socket.send(datagramPacket);
+        // } catch (IOException e) {
+        //     LOG.warn("Could not send data package ::= [{}]:", dataPackage, e);
+        // }
 
     }
 

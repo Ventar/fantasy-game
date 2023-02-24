@@ -3,11 +3,12 @@ package mro.fantasy.game.devices.board.impl;
 import mro.fantasy.game.Position;
 import mro.fantasy.game.Size;
 import mro.fantasy.game.devices.board.BoardModule;
-import mro.fantasy.game.devices.events.DeviceDataPackage;
+import mro.fantasy.game.devices.events.DeviceMessage;
 import mro.fantasy.game.devices.events.DeviceMessageType;
 import mro.fantasy.game.devices.impl.AbstractDevice;
 import mro.fantasy.game.devices.impl.Color;
 import mro.fantasy.game.devices.impl.DeviceType;
+import mro.fantasy.game.devices.impl.ServerMessageType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,7 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Implementation of a single physical board module that is managed by the {@link mro.fantasy.game.devices.board.BoardController}
+ * Implementation of a single physical board module that is managed by the {@link mro.fantasy.game.devices.board.BoardModule}
  *
  * @author Michael Rodenbuecher
  * @since 2022-08-19
@@ -35,7 +36,7 @@ public class BoardModuleImpl extends AbstractDevice implements BoardModule {
     /**
      * The number of rows and columns of the board module.
      */
-    private static final Size BOARD_SIZE = new Size(8, 8);
+    private static final Size BOARD_SIZE = new Size(4, 4);
 
     /**
      * Array of board fields for this module.
@@ -64,6 +65,8 @@ public class BoardModuleImpl extends AbstractDevice implements BoardModule {
                 fields[column][row] = new BoardFieldImpl(new Position(column, row));
             }
         }
+        LOG.debug("Created new board module ::= [{}]", this);;
+
     }
 
     @Override
@@ -81,22 +84,12 @@ public class BoardModuleImpl extends AbstractDevice implements BoardModule {
     public synchronized void clearColors() {
         this.colorsToUpdate.clear();
         Arrays.stream(fields).flatMap(columns -> Arrays.stream(columns)).forEach(f -> f.setColor(Color.OFF));
-
-        DeviceDataPackage ddp = new DeviceDataPackage(DeviceType.SERVER, deviceId, DeviceMessageType.REGISTER.getEventId(), null);
-
-        try {
-            DatagramPacket datagramPacket = new DatagramPacket(ddp.getRaw(), ddp.getRaw().length, deviceAddress, deviceUDPPort);
-            socket.send(datagramPacket);
-            LOG.debug("[{}] - Send datagram ::= [{}]", this.deviceId, ddp);
-        } catch (IOException e) {
-            LOG.warn("Could not send data package ::= [{}]:", ddp, e);
-        }
+        sendData(ServerMessageType.BOARD_COLOR_CLEAR);
     }
 
     @Override
     public synchronized void setColor(Position position, Color color) {
         LOG.debug("[{}] - set position ::= [{}] to ::= [{}]", deviceId, position, color);
-
         fields[position.column()][position.row()].setColor(color);
         this.colorsToUpdate.put(position, color);
     }
@@ -126,18 +119,18 @@ public class BoardModuleImpl extends AbstractDevice implements BoardModule {
         byte[] byteData = new byte[1 + colorsToUpdate.size() * 5];        // create a new array to send it to the Arduino device
         buf.get(byteData, 0, 1 + colorsToUpdate.size() * 5);  // copy the content of the byte buffer
 
-        DeviceDataPackage ddp = new DeviceDataPackage(DeviceType.SERVER, "SERVER",
-                clear ? DeviceMessageType.BOARD_COLOR_CLEAR_AND_UPDATE.getEventId() : DeviceMessageType.BOARD_COLOR_UPDATE.getEventId(),
-                byteData);
-
-        try {
-            DatagramPacket datagramPacket = new DatagramPacket(ddp.getRaw(), ddp.getRaw().length, deviceAddress, deviceUDPPort);
-            socket.send(datagramPacket);
-            LOG.debug("[{}] - Send datagram ::= [{}]", this.deviceId, ddp);
-            this.colorsToUpdate.clear();
-        } catch (IOException e) {
-            LOG.warn("[{}] - Could not send data package ::= [{}]:", this.deviceId, ddp, e);
-        }
+        // DeviceMessage ddp = new DeviceMessage(DeviceType.SERVER, "SERVER",
+        //         clear ? DeviceMessageType.BOARD_COLOR_CLEAR_AND_UPDATE.getEventId() : DeviceMessageType.BOARD_COLOR_UPDATE.getEventId(),
+        //         byteData);
+        //
+        // try {
+        //     DatagramPacket datagramPacket = new DatagramPacket(ddp.getRaw(), ddp.getRaw().length, deviceAddress, deviceUDPPort);
+        //     socket.send(datagramPacket);
+        //     LOG.debug("[{}] - Send datagram ::= [{}]", this.deviceId, ddp);
+        //     this.colorsToUpdate.clear();
+        // } catch (IOException e) {
+        //     LOG.warn("[{}] - Could not send data package ::= [{}]:", this.deviceId, ddp, e);
+        // }
     }
 
 

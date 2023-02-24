@@ -5,7 +5,7 @@ import mro.fantasy.game.Size;
 import mro.fantasy.game.devices.board.BoardField;
 import mro.fantasy.game.devices.board.BoardModule;
 import mro.fantasy.game.devices.board.GameBoard;
-import mro.fantasy.game.devices.events.DeviceDataPackage;
+import mro.fantasy.game.devices.events.DeviceMessage;
 import mro.fantasy.game.devices.events.DeviceEventHandler;
 import mro.fantasy.game.devices.impl.Color;
 import mro.fantasy.game.engine.events.BoardUpdatedEvent;
@@ -83,7 +83,7 @@ public class GameBoardImpl extends AbstractGameEventProducer<BoardUpdatedEvent, 
 
 
     @Override
-    public void handle(DeviceDataPackage eventData) {
+    public void handle(DeviceMessage eventData) {
 
         if (moduleMatrix == null) {
             LOG.debug("[{}] - No board modules were configured, skip event processing...", eventData.getDeviceId());

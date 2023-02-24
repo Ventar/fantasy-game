@@ -122,13 +122,12 @@ public class DeviceDiscoveryServiceImpl implements DeviceDiscoveryService {
                     return;
                 }
 
-                boardModule.sendRegister("SERVER", networkConfiguration.getAdapterIPAddress(), networkConfiguration.getEventUDPPort());
+                boardModule.sendRegister(networkConfiguration.getAdapterIPAddress(), networkConfiguration.getEventUDPPort());
                 boardModules.add(boardModule);
                 LOG.info("[{}] - found board module ::= [{}]", boardModule.getId(), boardModule);
             } catch (IOException e) {
                 LOG.warn("Cannot register board module with id ::= [{}]:", serviceEvent.getName(), e);
             }
-
 
         });
 

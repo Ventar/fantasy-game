@@ -1,14 +1,13 @@
 package mro.fantasy.game.devices.events;
 
+import mro.fantasy.game.devices.impl.AbstractMessage;
 import mro.fantasy.game.devices.impl.DeviceType;
 import mro.fantasy.game.utils.Condition;
 import mro.fantasy.game.utils.ValidationUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.stream.IntStream;
 
 /**
  * Class to parse the basic part of UDP packages which were sent to the game server as an event from one of the connected devices. Every package send to the server follows the
@@ -20,7 +19,7 @@ import java.util.stream.IntStream;
  * data -  | device ID    | device Type | eventId |  [data]
  * } </pre>
  * <p>
- * The MAC address is used to identify the device uniquely within the game system, the {@link DeviceType} is used to distribute the event to the correct handler and allows in
+ * The device ID is used to identify the device uniquely within the game system, the {@link DeviceType} is used to distribute the event to the correct handler and allows in
  * combination with the {@code eventId} the parsing of the data that is following the event ID.
  * <p>
  * This header is the same for every device that is part of the game, i.e. the parsing of it can be done in this class. The parsing of the data depends on the header information
@@ -29,22 +28,17 @@ import java.util.stream.IntStream;
  * @author Michael Rodenbuecher
  * @since 2022-08-15
  */
-public class DeviceDataPackage {
+public class DeviceMessage extends AbstractMessage {
 
     /**
      * Logger.
      */
-    private static final Logger LOG = LoggerFactory.getLogger(DeviceDataPackage.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DeviceMessage.class);
 
     /**
      * The raw datagram content.
      */
     private byte[] raw;
-
-    /**
-     * The bytes which represent the data part of the device UDP package
-     */
-    private byte[] data;
 
     /**
      * The type of device that sent the event.
@@ -57,18 +51,13 @@ public class DeviceDataPackage {
     private String deviceId = "";
 
     /**
-     * The ID of the event that is sent by the device. Every device can send different events where the following data in the byte stream depends on the event id that was sent.
-     */
-    private int eventId;
-
-    /**
      * Creates a new instance from the passed UDP datagram package
      *
      * @param datagram the data from the event.
      *
      * @throws IllegalArgumentException if the passed datagram cannot be parsed
      */
-    public DeviceDataPackage(byte[] datagram) {
+    private DeviceMessage(byte[] datagram) {
 
         ValidationUtils.requireNonNull(datagram, "The datagram package cannot be null");
         ValidationUtils.requireFalse(datagram.length < 8, "The header field of the datagram package must contain at least 8 bytes.");
@@ -90,47 +79,46 @@ public class DeviceDataPackage {
     }
 
     /**
-     * Creates a data package from the given arguments.
-     *
-     * @param deviceType The bytes which represent the data part of the event UDP package
-     * @param deviceId   The unique device ID which is represented by the MAC address of the device.
-     * @param eventId    The ID of the event that is sent by the device. Every device can send different events where the following data in the byte stream depends on the event id
-     *                   that was sent.
-     * @param data       the actual data that is send after the header, can be {@code null}
+     * Creates a new message from the passed UDP datagram
+     * @param datagram the raw data
+     * @return the new message
      */
-    public DeviceDataPackage(DeviceType deviceType, String deviceId, int eventId, byte[] data) {
-
-        if (deviceId == null || deviceId.length() != 6) {
-            throw new IllegalArgumentException("The device ID ::= [" + deviceId + "] has to have 6 letters");
-        }
-
-        this.deviceType = deviceType;
-        this.deviceId = deviceId;
-        this.eventId = eventId;
-
-        var bytesDeviceId = this.deviceId.getBytes(StandardCharsets.UTF_8);
-
-        // if no data was set because the event is sufficient, we simply send a 0 to make the code on this side easier.
-        this.data = data == null ? new byte[]{0} : data;
-
-        this.raw = new byte[8 + data.length];
-        IntStream.range(0, 6).forEach(i -> this.raw[i] = bytesDeviceId[i] );           // device ID
-        this.raw[6] = (byte) deviceType.getTypeId();                                    // deviceType
-        this.raw[7] = (byte) eventId;                                                   // eventId
-        System.arraycopy(data, 0, this.raw, 8, data.length);              // data
-
-        LOG.trace("[{}] - created device data package of size ::= [{}]", deviceId, raw.length);
+    public static DeviceMessage parse(byte[] datagram) {
+        return new DeviceMessage(datagram);
     }
-
-
-    /**
-     * Returns the bytes which represent the data part of the event UDP package
-     *
-     * @return the data
-     */
-    public byte[] getData() {
-        return data;
-    }
+    
+    // /**
+    //  * Creates a data package from the given arguments.
+    //  *
+    //  * @param deviceType The bytes which represent the data part of the event UDP package
+    //  * @param deviceId   The unique device ID which is represented by the MAC address of the device.
+    //  * @param eventId    The ID of the event that is sent by the device. Every device can send different events where the following data in the byte stream depends on the event id
+    //  *                   that was sent.
+    //  * @param data       the actual data that is send after the header, can be {@code null}
+    //  */
+    // public DeviceDataPackage(DeviceType deviceType, String deviceId, int eventId, byte[] data) {
+    //
+    //     if (deviceId == null || deviceId.length() != 6) {
+    //         throw new IllegalArgumentException("The device ID ::= [" + deviceId + "] has to have 6 letters");
+    //     }
+    //
+    //     this.deviceType = deviceType;
+    //     this.deviceId = deviceId;
+    //     this.eventId = eventId;
+    //
+    //     var bytesDeviceId = this.deviceId.getBytes(StandardCharsets.UTF_8);
+    //
+    //     // if no data was set because the event is sufficient, we simply send a 0 to make the code on this side easier.
+    //     this.data = data == null ? new byte[]{0} : data;
+    //
+    //     this.raw = new byte[8 + data.length];
+    //     IntStream.range(0, 6).forEach(i -> this.raw[i] = bytesDeviceId[i] );           // device ID
+    //     this.raw[6] = (byte) deviceType.getTypeId();                                    // deviceType
+    //     this.raw[7] = (byte) eventId;                                                   // eventId
+    //     System.arraycopy(data, 0, this.raw, 8, data.length);              // data
+    //
+    //     LOG.trace("[{}] - created device data package of size ::= [{}]", deviceId, raw.length);
+    // }
 
     /**
      * The type of device that sent the event.
@@ -148,16 +136,6 @@ public class DeviceDataPackage {
      */
     public String getDeviceId() {
         return deviceId;
-    }
-
-    /**
-     * Returns the ID of the event that is sent by the device. Every device can send different events where the following data in the byte stream depends on the event id that was
-     * sent.
-     *
-     * @return the id
-     */
-    public int getEventId() {
-        return eventId;
     }
 
     /**

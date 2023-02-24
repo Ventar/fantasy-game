@@ -1,16 +1,16 @@
-package mro.fantasy.game.devices.events;
+package mro.fantasy.game.devices.impl;
 
 import mro.fantasy.game.Position;
 import mro.fantasy.game.devices.board.BoardModule;
-import mro.fantasy.game.devices.impl.Color;
+import mro.fantasy.game.devices.events.DeviceMessage;
 
 /**
  * Shared message types for all devices. The messages are specified here to have a common place for the documentation regardless of the used device.
  *
  * @author Michael Rodenbuecher
- * @since 2022-08-22
+ * @since 2023-02-24
  */
-public enum DeviceMessageType {
+public enum ServerMessageType {
 
     /**
      * Event send from the server to the client to inform the client about the IP address and the UDP port of the  server.
@@ -73,29 +73,7 @@ public enum DeviceMessageType {
      *
      * @see DeviceMessage
      */
-    BOARD_COLOR_CLEAR_AND_UPDATE(3),
-
-
-    /**
-     * Event send from the server to a physical {@link BoardModule} when the {@link BoardModule#sendColorUpdate(boolean)} method is called, clears all colors on the board and
-     * replace them with the ones which were set with the {@link BoardModule#setColor(Position, Color)} method before.
-     * <p>
-     * <pre>{@code
-     *  byte - | HEADER   | 9       | 10     | 11     | 12           |
-     *  data - |  0  - 8  | records | column | row    | sensor state |
-     *                              | repeated <records> time        |
-     *  with sensor state
-     *  bit  -  | 7 6 5 4   3     2     1     0      |
-     *  data -  | <empty>   west  south east  north  |
-     *
-     * }</pre>
-     * <p>
-     * Direction: CLIENT -> SERVER
-     *
-     * @see DeviceMessage
-     */
-    BOARD_SENSOR_UPDATE(4);
-
+    BOARD_COLOR_CLEAR_AND_UPDATE(3);
 
     /**
      * The unique ID of the event
@@ -107,7 +85,7 @@ public enum DeviceMessageType {
      *
      * @param eventId the event id
      */
-    DeviceMessageType(int eventId) {
+    ServerMessageType(int eventId) {
         this.eventId = eventId;
     }
 
@@ -129,8 +107,8 @@ public enum DeviceMessageType {
      *
      * @throws IllegalArgumentException in case the ID cannot be resolved
      */
-    public static DeviceMessageType fromID(int id) {
-        for (DeviceMessageType t : DeviceMessageType.values()) {
+    public static ServerMessageType fromID(int id) {
+        for (ServerMessageType t : ServerMessageType.values()) {
             if (t.getEventId() == id) return t;
         }
 

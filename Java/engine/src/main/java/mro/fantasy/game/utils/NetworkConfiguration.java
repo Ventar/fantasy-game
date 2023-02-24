@@ -1,5 +1,6 @@
 package mro.fantasy.game.utils;
 
+import mro.fantasy.game.devices.events.DeviceMessage;
 import mro.fantasy.game.devices.events.impl.UDPDeviceEventServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -123,7 +124,7 @@ public class NetworkConfiguration {
     }
 
     /**
-     * The number of bytes to exchange {@link mro.fantasy.game.devices.events.DeviceDataPackage}s.
+     * The number of bytes to exchange {@link DeviceMessage}s.
      *
      * @return the UDP buffer size
      */

@@ -33,7 +33,7 @@
 
 void setup()
 {
-  Wire.begin();
+  Wire.begin(17,16);
 
   Serial.begin(9600);
   while (!Serial)

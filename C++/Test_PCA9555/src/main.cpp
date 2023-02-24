@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include <PCA9555.h>
 
-#define I2C_ADDRESS 0x20
+#define I2C_ADDRESS 0x21
 #define I2C_INTERRUPT D7
 
 PCA9555 mx(I2C_ADDRESS);

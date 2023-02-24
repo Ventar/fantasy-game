@@ -1,6 +1,6 @@
 package mro.fantasy.game.devices.impl;
 
-import mro.fantasy.game.devices.events.DeviceDataPackage;
+import mro.fantasy.game.devices.events.DeviceMessage;
 import mro.fantasy.game.devices.events.DeviceMessageType;
 import mro.fantasy.game.devices.events.impl.UDPDeviceEventServiceImpl;
 import org.slf4j.Logger;
@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 /**
@@ -79,22 +80,42 @@ public class AbstractDevice {
     /**
      * Constructs the header of an outgoing event and append the passed data. Afterwards this is sent as a datagram packet to the device via UDP.
      *
-     * @param eventId the id of the event that defines the data that is sent.
+     * @param msgType the type of the message to send
      * @param data    the event data
      *
      * @see UDPDeviceEventServiceImpl
-     * @see DeviceDataPackage
+     * @see ServerMessage
      */
-    public void sendData(int eventId, byte[] data) {
-        DeviceDataPackage dataPackage = new DeviceDataPackage(deviceType, deviceId, eventId, data);
+    public void sendData(ServerMessageType msgType, byte[] data) {
+        ServerMessage msg = new ServerMessage(msgType, data);
 
-        LOG.debug("[{}] - Try to send data package ::= [{}]", deviceId, dataPackage);
+        LOG.debug("[{}] - Try to send data package ::= [{}]", deviceId, msg);
 
         try {
-            DatagramPacket datagramPacket = new DatagramPacket(dataPackage.getRaw(), dataPackage.getRaw().length, deviceAddress, deviceUDPPort);
-            socket.send(datagramPacket);
+            socket.send(msg.toDatagramPacket(deviceAddress, deviceUDPPort));
         } catch (IOException e) {
-            LOG.warn("[{}] - Could not send data package ::= [{}]:", deviceId, dataPackage, e);
+            LOG.warn("[{}] - Could not send data package ::= [{}]:", deviceId, msg, e);
+        }
+
+    }
+
+    /**
+     * Constructs the header of an outgoing event without any payload. Afterwards this is sent as a datagram packet to the device via UDP.
+     *
+     * @param msgType the type of the message to send
+     *
+     * @see UDPDeviceEventServiceImpl
+     * @see DeviceMessage
+     */
+    public void sendData(ServerMessageType msgType) {
+        ServerMessage msg = new ServerMessage(msgType);
+
+        LOG.debug("[{}] - Try to send data package ::= [{}]", deviceId, msg);
+
+        try {
+            socket.send(msg.toDatagramPacket(deviceAddress, deviceUDPPort));
+        } catch (IOException e) {
+            LOG.warn("[{}] - Could not send data package ::= [{}]:", deviceId, msg, e);
         }
 
     }
@@ -106,7 +127,7 @@ public class AbstractDevice {
      * @param serverAddress the IP address of the server to send the message to
      * @param serverUDPPort the UDP port of the server to send the message to
      */
-    public void sendRegister(String deviceId, String serverAddress, int serverUDPPort) {
+    public void sendRegister(String serverAddress, int serverUDPPort) {
 
         LOG.debug("[{}] - Send register message to ::= [{}] on port ::= [{}]", this.deviceId, deviceAddress, deviceUDPPort);
 
@@ -121,16 +142,14 @@ public class AbstractDevice {
         data[4] = (byte) (serverUDPPort >>> 8);                                   // UDP port
         data[5] = (byte) (serverUDPPort);
 
-        DeviceDataPackage ddp = new DeviceDataPackage(DeviceType.SERVER, deviceId, DeviceMessageType.REGISTER.getEventId(), data);
-
         try {
-            DatagramPacket datagramPacket = new DatagramPacket(ddp.getRaw(), ddp.getRaw().length, deviceAddress, deviceUDPPort);
-            socket.send(datagramPacket);
-            LOG.debug("[{}] - Send datagram ::= [{}]", this.deviceId, ddp);
-        } catch (IOException e) {
-            LOG.warn("Could not send data package ::= [{}]:", ddp, e);
+            sendData(ServerMessageType.REGISTER, data);
+            // workaround for the weird arduino case were the first message is not handled.
+            Thread.sleep(100);
+            sendData(ServerMessageType.REGISTER, data);
+        } catch (Exception e) {
+            LOG.warn("Could not send data package:",  e);
         }
-
     }
 
     @Override
@@ -154,5 +173,12 @@ public class AbstractDevice {
                        ", deviceType=" + deviceType +
                        ", deviceId='" + deviceId + '\'' +
                        '}';
+    }
+
+
+    public static void main(String[] args) throws Exception {
+        DatagramSocket socket = new DatagramSocket();
+        DatagramPacket p = new DatagramPacket("Hello".getBytes(StandardCharsets.UTF_8), 5, InetAddress.getByName("192.168.51.58"), 4669);
+        socket.send(p);
     }
 }

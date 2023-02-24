@@ -3,7 +3,7 @@
  *
  * <h2>Device Event Processing</h2>
  * The processing of the events is done by two kind of services, the {@link mro.fantasy.game.devices.events.DeviceEventService} which is able to receive {@link
- * mro.fantasy.game.devices.events.DeviceDataPackage} from hardware devices, and the {@link mro.fantasy.game.engine.events.GameEventProducer} which will convert these events to
+ * mro.fantasy.game.devices.events.DeviceMessage} from hardware devices, and the {@link mro.fantasy.game.engine.events.GameEventProducer} which will convert these events to
  * internal {@link mro.fantasy.game.engine.events.GameEvent}s and forward them to {@link mro.fantasy.game.engine.events.GameEventListener}. The producer itself is triggered by
  * the {@code DeviceEventService} whenever an event arrives from a device. To achive this it implements the @{@link mro.fantasy.game.devices.events.DeviceEventHandler} interface.
  * <p>
@@ -12,7 +12,7 @@
  * <h2>Handler vs. Listener in the Context of Spring</h2>
  * The event implementation uses handler and listeners. Actually both types behave similar but the control flow is different. Regardless if you have a handler or a listener, both
  * of them are defined in interfaces which have a method to react on certain kind of data passed to it. In the event implementation the {@link
- * mro.fantasy.game.devices.events.DeviceEventHandler#handle(DeviceDataPackage)} method and the {@link mro.fantasy.game.engine.events.GameEventListener#onEvent(GameEvent)}
+ * mro.fantasy.game.devices.events.DeviceEventHandler#handle(DeviceMessage)} method and the {@link mro.fantasy.game.engine.events.GameEventListener#onEvent(GameEvent)}
  * method do actually the same.
  * <p>
  * <img src="doc-files/HandlerVsListener.png"/>

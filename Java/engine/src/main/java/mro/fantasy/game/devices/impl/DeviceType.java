@@ -1,6 +1,6 @@
 package mro.fantasy.game.devices.impl;
 
-import mro.fantasy.game.devices.events.DeviceDataPackage;
+import mro.fantasy.game.devices.events.DeviceMessage;
 
 /**
  * The type of device.
@@ -14,7 +14,7 @@ public enum DeviceType {
     PLAYER_CONTROLLER(2);
 
     /**
-     * Unique id to identify an device in the {@link DeviceDataPackage}.
+     * Unique id to identify an device in the {@link DeviceMessage}.
      */
     private int typeId;
 
@@ -23,7 +23,7 @@ public enum DeviceType {
     }
 
     /**
-     * Returns the unique id to identify an device in the {@link DeviceDataPackage}.
+     * Returns the unique id to identify an device in the {@link DeviceMessage}.
      *
      * @return the id
      */

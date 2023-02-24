@@ -1,6 +1,6 @@
 package mro.fantasy.game.devices.events.impl;
 
-import mro.fantasy.game.devices.events.DeviceDataPackage;
+import mro.fantasy.game.devices.events.DeviceMessage;
 import mro.fantasy.game.devices.events.DeviceEventHandler;
 import mro.fantasy.game.devices.events.DeviceEventService;
 import mro.fantasy.game.engine.events.impl.EventThreadPool;
@@ -17,7 +17,7 @@ import java.util.List;
 
 /**
  * Implementation of the event service which listens on a UDP port to receive events from the devices of the game. The service has access to all device event handlers, converts all
- * incoming datagram packages to {@link DeviceDataPackage}s and offer them to the {@link DeviceEventHandler#handle(DeviceDataPackage)} method.
+ * incoming datagram packages to {@link DeviceMessage}s and offer them to the {@link DeviceEventHandler#handle(DeviceMessage)} method.
  *
  * @author Michael Rodenbuecher
  * @since 2022-08-13
@@ -93,7 +93,7 @@ public class UDPDeviceEventServiceImpl extends ServiceThread implements DeviceEv
 
         executor.execute(() -> {
             try {
-                DeviceDataPackage dataPackage = new DeviceDataPackage(packet.getData());
+                DeviceMessage dataPackage = DeviceMessage.parse(packet.getData());
                 LOG.debug("[{}] - Received device event ::= [{}]", dataPackage.getDeviceId(), dataPackage);
 
                 eventHandler.forEach(handler -> handler.handle(dataPackage));    // offer the event to all registered event handler.
