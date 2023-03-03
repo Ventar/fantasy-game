@@ -134,7 +134,7 @@ public class BoardModuleRenderer {
 
             buf.append(" ");
 
-            String fill = field.getColor().equals(Color.OFF) ? " " : LED_ON;
+            String fill = field.getColor().equals(Color.Black) ? " " : LED_ON;
 
 
             switch (cellRow) {
@@ -216,8 +216,8 @@ public class BoardModuleRenderer {
 
         module.getField(new Position(4, 2)).setWestEnabled(true);
         module.getField(new Position(4, 1)).setEastEnabled(true);
-        module.getField(new Position(4, 1)).setColor(Color.RED);
-        module.getField(new Position(5, 4)).setColor(Color.RED);
+        module.getField(new Position(4, 1)).setColor(Color.Red;
+        module.getField(new Position(5, 4)).setColor(Color.Red);
 
         BoardModuleRenderer renderer = new BoardModuleRenderer();
         renderer.render(module);

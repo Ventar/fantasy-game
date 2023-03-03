@@ -8,6 +8,7 @@
 
 #define UDP_CALLBACK [](UDPService * udp, uint8_t * data)
 #define UDP_MESSAGE_REGISTER 0
+#define UDP_MESSAGE_CLEAR_COLORS 1
 
 class UDPService;
 

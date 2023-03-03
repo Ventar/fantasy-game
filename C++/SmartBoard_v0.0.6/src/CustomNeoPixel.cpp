@@ -2,7 +2,7 @@
 
 CustomNeoPixel::CustomNeoPixel(uint16_t n, uint16_t p) : Adafruit_NeoPixel(n, p, NEO_GRB + NEO_KHZ800) {
     begin();
-    setBrightness(220);
+    setBrightness(64);
     clear();
     show();
 }

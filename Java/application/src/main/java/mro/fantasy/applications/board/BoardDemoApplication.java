@@ -1,6 +1,7 @@
 package mro.fantasy.applications.board;
 
 import mro.fantasy.game.Position;
+import mro.fantasy.game.devices.board.BoardModule;
 import mro.fantasy.game.devices.board.GameBoard;
 import mro.fantasy.game.devices.board.impl.BoardModuleRenderer;
 import mro.fantasy.game.devices.discovery.impl.DeviceDiscoveryServiceImpl;
@@ -60,6 +61,12 @@ public class BoardDemoApplication implements CommandLineRunner {
 
         //gameBoard.setColor(new Position(3, 3), Color.BLUE);
         //gameBoard.sendColorUpdate(false);
+
+        BoardModule mod = deviceDiscoveryService.getBoardModules().get(0);
+
+        mod.clearColors();
+        mod.setColor(new Position(0, 0), Color.Teal);
+
 
         BoardModuleRenderer renderer = new BoardModuleRenderer();
         gameBoard.registerListener(event -> renderer.render(gameBoard));

@@ -74,8 +74,10 @@ class SensorModule {
      * @param i2cBus I2C bus used to control the PCA9555 instances. Since the bus maybe shared with other instances it has to be provided from outside.
      * @param irq    the interrupt used for the complete gameboard. Used to update the internal multiplexer pin state array when a change is detected.
      * @param updateFunction function that is called when an sensor update was detected in the loop() function call
+     * @param mxAddress the I2C address of the multiplexer to which this module is connected
+     * @param mxChannel the I2C multiplexer channel to which this module is connected.
      */
-    SensorModule(TwoWire *i2cBus, uint8_t irq);
+    SensorModule(TwoWire *i2cBus, uint8_t irq, uint8_t mxAddress, uint8_t mxChannel);
 
     /**
      * Has to be executed before the use of this class. The i2cBus.begin(...) method has to be called BEFORE this method is called, otherwise the values will
@@ -130,6 +132,14 @@ class SensorModule {
      */
     void setBoardCallback(SensorUpdatedFunction callback) { _boardCallback = callback; };
 
+    /**
+     * Writes the physical PIN states of the passed multiplexer address to the serial output for debugging reasons. Used when BOARD_MODULE_DEBUG is defined
+     * @param address the address of the I2C multiplexer to write the pins
+     */
+    void dumpPinStatesToSerial(uint8_t address);
+
+    void dumpPinStatesToSerial();
+
   private:
     /**
      * Holds the state of the digital multiplexer ICs. This array is initialized during initalization when the initMultiplexer() method is called and updated
@@ -160,6 +170,16 @@ class SensorModule {
      * Interrupt for the complete board module
      */
     uint8_t _irq;
+
+    /**
+     * Address of the TCA9548 multiplexer to which the module is connected.
+     */
+    uint8_t _mxAddress;
+
+    /**
+     * Channel of the TCA9548 multiplexer to which the module is connected.
+     */
+    uint8_t _mxChannel;
 
     /**
      * if the edge sensors of the fields are enabled.
@@ -204,14 +224,6 @@ class SensorModule {
      */
     uint16_t readMXPins(uint8_t address);
 
-    /**
-     * Writes the physical PIN states of the passed multiplexer address to the serial output for debugging reasons. Used when BOARD_MODULE_DEBUG is defined
-     * @param address the address of the I2C multiplexer to write the pins
-     */
-    void dumpPinStatesToSerial(uint8_t address);
-
-    void dumpPinStatesToSerial();
-
     // low level interactions with the digital multiplexer
     // ---------------------------------------------------------------------------------------------------------------------------------
 
@@ -243,6 +255,11 @@ class SensorModule {
      * @return data in register
      */
     uint16_t readRegister(uint8_t address, uint8_t reg);
+
+    /**
+     * Configures the TCA9548 to connect to the I2C bus of this module
+     */
+    void enableMXChannel();
 };
 
 #endif

@@ -5,7 +5,7 @@
 #define PCA9555_REG_INVERT 4
 #define PCA9555_REG_CONFIG 6
 
-#define I2C_START 0x21
+#define I2C_START 0x20
 #define I2C_BUTTONS 0x20
 #define I2C_SECTOR_0 0x21
 #define I2C_SECTOR_1 0x22
@@ -14,7 +14,12 @@
 #define I2C_BOARD 0x25
 #define I2C_IRQ 0x26
 
-SensorModule::SensorModule(TwoWire *i2cBus, uint8_t irq) : _i2cBus(i2cBus), _irq(irq) { begin(); }
+#define CALLBACK_DELAY 100
+
+SensorModule::SensorModule(TwoWire *i2cBus, uint8_t irq, uint8_t mxAddress, uint8_t mxChannel)
+    : _i2cBus(i2cBus), _irq(irq), _mxAddress(mxAddress), _mxChannel(mxChannel) {
+    begin();
+}
 
 bool SensorModule::begin() {
     pinMode(_irq, INPUT); // interrupt for multiplexer
@@ -36,13 +41,14 @@ void SensorModule::checkIRQ() {
     // check if the interrupt was triggered. The PCA9555 interrupt will change to LOW when a port / pin changes its state. A reset is performed when the
     // register is read the next time. The interrupt that is checked should be the one of the interrupt PCA9555 with address IC2_IRQ
     if (digitalRead(_irq) == 0) {
-        Serial.println("IRQ was triggered...");
+        Serial.printf("IRQ channel %d was triggered...\n", _mxChannel);
         // wait in case other IRQs are triggered, that may happen until the player has finalize the positioning of a tile on the board
         readMXPins(I2C_IRQ);
 
         // we only need to perform a read operation if a callback was set and the sensorupdate is enabled.
         if (_boardEnabled && sensorActive(I2C_IRQ, 8) && _boardCallback) {
             readMXPins(I2C_BOARD);
+            dumpPinStatesToSerial(I2C_BOARD);
             _boardCallback(this);
         }
 
@@ -58,14 +64,18 @@ void SensorModule::checkIRQ() {
 
         if (_edgeEnabled && _edgeCallback && (sensorActive(I2C_IRQ, 0) || sensorActive(I2C_IRQ, 7) || sensorActive(I2C_IRQ, 9) || sensorActive(I2C_IRQ, 15))) {
 
-            if (sensorActive(I2C_IRQ, 0))
+            if (sensorActive(I2C_IRQ, 0)) {
                 readMXPins(I2C_SECTOR_0);
-            if (sensorActive(I2C_IRQ, 7))
+            }
+            if (sensorActive(I2C_IRQ, 7)) {
                 readMXPins(I2C_SECTOR_1);
-            if (sensorActive(I2C_IRQ, 15))
+            }
+            if (sensorActive(I2C_IRQ, 15)) {
                 readMXPins(I2C_SECTOR_2);
-            if (sensorActive(I2C_IRQ, 9))
+            }
+            if (sensorActive(I2C_IRQ, 9)) {
                 readMXPins(I2C_SECTOR_3);
+            }
 
             _edgeCallback(this);
         }
@@ -93,14 +103,27 @@ bool SensorModule::sensorActive(uint8_t address, uint8_t pin) {
 }
 
 void SensorModule::dumpPinStatesToSerial(uint8_t address) {
+
+    Serial.print("0x");
+    Serial.print(address < 16 ? "0" : "");
+    Serial.print(address, HEX);
     Serial.print(" ");
+
     for (uint8_t pin = 0; pin < 16; pin++) {
 
         Serial.print(" ");
-
         Serial.print(sensorActive(address, pin));
-
         Serial.print(" ");
+    }
+
+    Serial.println(" ");
+}
+
+void SensorModule::dumpPinStatesToSerial() {
+    Serial.println("       0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15");
+
+    for (byte address = I2C_START; address < 0x27; address++) {
+        dumpPinStatesToSerial(address);
     }
 }
 
@@ -109,6 +132,10 @@ void SensorModule::dumpPinStatesToSerial(uint8_t address) {
 // ---------------------------------------------------------------------------------------------------------------------------------
 
 bool SensorModule::initMultiplexer(uint8_t address) {
+
+    // Configure the multiplexer to interact with the I2C bus of this module
+    enableMXChannel();
+
     // first we test if a connection to the PCA9555 can be established by
     // sending a test byte. If at least one of the modules fail, we end the
     // setup
@@ -120,8 +147,16 @@ bool SensorModule::initMultiplexer(uint8_t address) {
         return false;
     }
 
-    writeRegister(address, PCA9555_REG_CONFIG, 0xFF);
-    writeRegister(address, PCA9555_REG_CONFIG + 1, 0xFF);
+    // the IRQ multiplexer is not fully used, i.e. we set the not used ports to output to avoid random states and interrupts
+    if (address != I2C_IRQ) {
+        writeRegister(address, PCA9555_REG_CONFIG, 0xFF);
+        writeRegister(address, PCA9555_REG_CONFIG + 1, 0xFF);
+    } else {
+        writeRegister(address, PCA9555_REG_CONFIG, 0x81);
+        writeRegister(address, PCA9555_REG_CONFIG + 1, 0x87);
+        // writeRegister(address, PCA9555_REG_CONFIG, 0x0);
+        // writeRegister(address, PCA9555_REG_CONFIG + 1, 0x0);
+    }
 
     // we need to read the values here because it is possible that some magnets
     // are present on the field, i.e. we cannot assume a clear setup
@@ -130,6 +165,8 @@ bool SensorModule::initMultiplexer(uint8_t address) {
     return true;
 }
 
+// ATTENTION: This method does not use the enableMXChannel method for performance reasons. If it is used outside of the initMultiplexer() method the
+// enableMXChannel method must be called upfront.
 bool SensorModule::writeRegister(uint8_t address, uint8_t reg, uint8_t value) {
     // write output register to chip
     _i2cBus->beginTransmission(address); // setup direction registers
@@ -140,6 +177,10 @@ bool SensorModule::writeRegister(uint8_t address, uint8_t reg, uint8_t value) {
 }
 
 uint16_t SensorModule::readRegister(uint8_t address, uint8_t reg) {
+
+    // Configure the multiplexer to interact with the I2C bus of this module
+    enableMXChannel();
+
     uint16_t _inputData;
 
     // read the address input register
@@ -157,3 +198,9 @@ uint16_t SensorModule::readRegister(uint8_t address, uint8_t reg) {
     _inputData = _i2cBus->read();
     return _inputData;
 }
+
+void SensorModule::enableMXChannel() {
+    Wire.beginTransmission(_mxAddress);
+    Wire.write(1 << _mxChannel);
+    Wire.endTransmission();
+};

@@ -6,58 +6,78 @@ package mro.fantasy.game.devices.impl;
  * @author Michael Rodenbuecher
  * @since 2021-12-16
  */
-public record Color(int red, int green, int blue) {
+public enum Color {
 
-    public static final Color NOT_SET = new Color(255, 255, 255);
-    public static final Color OFF = new Color(0, 0, 0);
-    public static final Color RED = new Color(255, 0, 0);
-    public static final Color GREEN = new Color(0, 255, 0);
-    public static final Color BLUE = new Color(0, 0, 255);
-    public static final Color BLUE_50 = new Color(0, 0, 255);
-    public static final Color YELLOW = new Color(255, 255, 0);
-
-    public static final Color SETUP_PLAN_TILE_ANCHOR = new Color(128, 0, 0);
-    public static final Color PLAN_TILE_FIELD = new Color(0, 128, 0);
-    public static final Color PLAN_TILE_DIRECTION = new Color(255, 220, 0);
-
-    public static final Color MOVEMENT_START = new Color(128, 0, 128);
-    public static final Color MOVEMENT_COLOR = new Color(0, 128, 0);
-
-    public static final Color VISIBILITY_FALSE = new Color(128, 0, 0);
-    public static final Color VISIBILITY_TRUE = new Color(128, 128, 0);
-    public static final Color VISIBILITY_BLOCKED = new Color(0, 0, 128);
-    public static final Color VISIBILITY_START_FIELD = new Color(64, 0, 64);
+    Black(0),
+    SlateGrey(1),
+    Gray(2),
+    LightGrey(3),
+    White(4),
+    DarkRed(5),
+    Crimson(6),
+    Red(7),
+    Coral(8),
+    OrangeRed(9),
+    Orange(10),
+    Chocolate(11),
+    Yellow(12),
+    Gold(13),
+    DarkGreen(14),
+    GreenYellow(15),
+    LawnGreen(16),
+    Lime(17),
+    LightGreen(18),
+    SpringGreen(19),
+    LightSeaGreen(20),
+    Teal(21),
+    Aqua(22),
+    Turquoise(23),
+    AquaMarine(24),
+    PowderBlue(25),
+    SteelBlue(26),
+    DeepSkyBlue(28),
+    SkyBlue(29),
+    MidnightBlue(30),
+    DarkBlue(31),
+    MediumBlue(32),
+    Blue(33),
+    RoyalBlue(34),
+    BlueViolet(35),
+    Indigo(36),
+    MediumPurple(37),
+    DarkMagenta(38),
+    DarkViolet(39),
+    Magenta(40),
+    Orchid(41),
+    DeepPink(42),
+    Pink(43),
+    LightGoldenRodYellow(44),
+    MintCream(45);
 
     /**
-     * Creates a color from the 32bit representation
-     *
-     * @param rgb the 32bit value
+     * The unique ID of the color that has to match the ID for the board module devices.
      */
-    public Color(final int rgb) {
-        this((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF);
+    private final int id;
+
+    /**
+     * Creates a new color
+     *
+     * @param id the unique ID of the color
+     */
+    Color(final int id) {
+        this.id = id;
     }
 
     /**
-     * Returns the 32bit integer that represents this color.
+     * Returns the unique integer that represents this color.
      *
      * @return the integer
      */
     public int getInt() {
-        int rgb = red;
-        rgb = (rgb << 8) + green;
-        rgb = (rgb << 8) + blue;
-        return rgb;
+
+        return id;
     }
 
-    public Color clone() {
-        return new Color(red, green, blue);
-    }
-
-
-    @Override
-    public String toString() {
-        return "(" + red + "," + green + "," + blue + ")";
-    }
 }
 
 

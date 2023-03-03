@@ -83,7 +83,7 @@ public class BoardModuleImpl extends AbstractDevice implements BoardModule {
     @Override
     public synchronized void clearColors() {
         this.colorsToUpdate.clear();
-        Arrays.stream(fields).flatMap(columns -> Arrays.stream(columns)).forEach(f -> f.setColor(Color.OFF));
+        Arrays.stream(fields).flatMap(columns -> Arrays.stream(columns)).forEach(f -> f.setColor(Color.Black));
         sendData(ServerMessageType.BOARD_COLOR_CLEAR);
     }
 

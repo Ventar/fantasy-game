@@ -28,6 +28,21 @@ public enum ServerMessageType {
     REGISTER(0),
 
     /**
+     * Event send from the server to a physical {@link BoardModule} to clear all colors.
+     * <p>
+     * <pre>{@code
+     *  part -  | HEADER   |
+     *  byte -  |  0  - 8  |
+     *  data -  |          |
+     * }</pre>
+     * <p>
+     * Direction: SERVER -> CLIENT
+     *
+     * @see DeviceMessage
+     */
+    BOARD_COLOR_CLEAR(1),
+
+    /**
      * Event send from the server to a physical {@link BoardModule} when the {@link BoardModule#sendColorUpdate(boolean)} method is called.
      * <p>
      * <pre>{@code
@@ -41,22 +56,7 @@ public enum ServerMessageType {
      *
      * @see DeviceMessage
      */
-    BOARD_COLOR_UPDATE(1),
-
-    /**
-     * Event send from the server to a physical {@link BoardModule} to clear all colors.
-     * <p>
-     * <pre>{@code
-     *  part -  | HEADER   |
-     *  byte -  |  0  - 8  |
-     *  data -  |          |
-     * }</pre>
-     * <p>
-     * Direction: SERVER -> CLIENT
-     *
-     * @see DeviceMessage
-     */
-    BOARD_COLOR_CLEAR(2),
+    BOARD_COLOR_UPDATE(2),
 
     /**
      * Event send from the server to a physical {@link BoardModule} when the {@link BoardModule#sendColorUpdate(boolean)} method is called, clears all colors on the board and
