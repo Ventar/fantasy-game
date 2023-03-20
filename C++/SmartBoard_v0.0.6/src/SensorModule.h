@@ -11,17 +11,7 @@ class SensorModule; // forward declaration for the update function
 /**
  * Update function that is triggered when a sensor state has changed.
  */
-typedef void (*SensorUpdatedFunction)(SensorModule *module);
-
-enum SensorType { NORTH, EAST, SOUTH, WEST, BOARD, BUTTON };
-
-/**
- * Struct to hold information about a single sensor on the PCBs.
- */
-struct SensorState {
-    uint16_t type : 3;
-    uint16_t state : 1;
-};
+typedef void (*SensorUpdatedFunction)();
 
 /**
  * Represents a physical board module. The module is split into sectors, fields and sensors. The following image shows the sector and field view.
@@ -69,6 +59,11 @@ struct SensorState {
 class SensorModule {
   public:
     /**
+     * @brief the type of sensor used
+     */
+    enum SensorType { BUTTON, BOARD, EDGE };
+
+    /**
      * Creates a new instance.
      *
      * @param i2cBus I2C bus used to control the PCA9555 instances. Since the bus maybe shared with other instances it has to be provided from outside.
@@ -88,6 +83,11 @@ class SensorModule {
     void checkIRQ();
 
     /**
+     * Performs an update of the internal registers of the module and triggers call backs if a change was detected.
+     */
+    void update();
+
+    /**
      * Checks if the passed PIN is active (set to 0) for the passed multiplexer address. The readMXPins() method has to be executed before a call to this method
      * to have values that represent the actual state. This is usually performed when the interrupt is triggered.
      *
@@ -97,40 +97,34 @@ class SensorModule {
     bool sensorActive(uint8_t address, uint8_t pin);
 
     /**
-     * Enables the detection and the execution of callbacks when a sensor update was recognized.
-     * @param enabled true if the callback should be executed, false otherwise
+     * Enables or disables the sensors of the physical board modules. If a sensor is disabled no events of the corresponding type will be sent by the board
+     * anymore. This can be used to avoid error handling for irrelevant cases. If you wait for a button event and the player shouldn't add / remove / move
+     * something on the game board, disabling the BOARD and EDGE sensors can avoid false positives during the interaction. In addition, disabled sensors reduce
+     * the overall processing time of the physical board module and my increase the responsiveness of the hardware. <p> The method will always set the state of
+     * all sensors, i.e. the full expected value set (all three boolean values) have to be provided, there is no delta calculation.
+     *
+     * @param button if the button sensor type is enabled or not
+     * @param board if the board sensor type is enabled or not
+     * @param edge if the edge sensor type is enabled or not
      */
-    void enableBoardSensors(bool enabled) { _boardEnabled = enabled; };
+    void enableSensors(bool button, bool board, bool edge) {
+        _edgeEnabled = edge;
+        _buttonEnabled = button;
+        _boardEnabled = board;
+    };
 
     /**
-     * Enables the detection and the execution of callbacks when a sensor update was recognized.
-     * @param enabled true if the callback should be executed, false otherwise
+     * @brief Sets the callback function for a sensor change. The callback is only triggered if the sensors are activated (default is active).
+     * @param callback the callback to execute
      */
-    void enableEdgeSensors(bool enabled) { _edgeEnabled = enabled; };
+    void setCallback(SensorType type, SensorUpdatedFunction callback);
 
     /**
-     * Enables the detection and the execution of callbacks when a sensor update was recognized.
-     * @param enabled true if the callback should be executed, false otherwise
-     */
-    void enableButtonSensors(bool enabled) { _buttonEnabled = enabled; };
-
-    /*
-     * Sets the callback function for a button sensor change. The callback is only triggered if the sensors are activated (default is active).
-     * @param callback the callback to execute
-     */
-    void setButtonCallback(SensorUpdatedFunction callback) { _buttonCallback = callback; };
-
-    /*
-     * Sets the callback function for a edge sensor change. The callback is only triggered if the sensors are activated (default is active).
-     * @param callback the callback to execute
-     */
-    void setEdgeCallback(SensorUpdatedFunction callback) { _edgeCallback = callback; };
-
-    /*
-     * Sets the callback function for a board sensor change. The callback is only triggered if the sensors are activated (default is active).
-     * @param callback the callback to execute
-     */
-    void setBoardCallback(SensorUpdatedFunction callback) { _boardCallback = callback; };
+     @brief  Writes the sensor state of the passed type as bit encoded bytes to the destination parameter. The size depends on the type, i.e. for board and
+     button we need 2 bytes, every module of the board has 16 sensors so that 16 bits are needed, for edge sensors 4 bytes are set (every module has 16 fields with
+     4 sensors)
+    */
+    void writeSensorState(SensorType type, uint8_t *dest);
 
     /**
      * Writes the physical PIN states of the passed multiplexer address to the serial output for debugging reasons. Used when BOARD_MODULE_DEBUG is defined
@@ -160,6 +154,11 @@ class SensorModule {
      *
      */
     uint16_t _mxPinStates[7];
+
+    /**
+     * The previous version of the pin states to calculate the delta between the current one and the previous one
+     */
+    uint16_t _mxPinStatesPrev[7];
 
     /**
      * I2C bus used to control the PCA9555 instances. Since the bus maybe shared with other instances it has to be provided from outside.

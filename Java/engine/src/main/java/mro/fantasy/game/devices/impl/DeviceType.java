@@ -9,7 +9,6 @@ import mro.fantasy.game.devices.events.DeviceMessage;
  * @since 2022-08-13
  */
 public enum DeviceType {
-    SERVER(0),
     BOARD_MODULE(1),
     PLAYER_CONTROLLER(2);
 

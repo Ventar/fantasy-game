@@ -1,0 +1,94 @@
+'https://plantuml.com/class-diagram
+
+@startuml
+!theme spacelab
+skinparam BackgroundColor #2B2B2B
+'skinparam linetype ortho
+
+namespace devices #222222 {
+
+    interface DeviceEventService  << (S,#00AA00) Service >> {
+       Service to receive events from devices and
+       forward them to the Device Controllers.
+       ..
+    }
+
+    class PlayerController << (C,#AAAA00) Component >> {
+        Component that aggregates all hardware controller of
+        the players to grant access to them.
+        ..
+    }
+
+    class GameBoard << (C,#AAAA00) Component >> {
+       Component that aggregates all hardware board
+       and creates an abstraction of a single game board.
+       ..
+    }
+
+    PlayerController --> DeviceEventService : handles
+    GameBoard --> DeviceEventService : handles
+
+}
+
+namespace communication #222222 {
+
+    interface AudioCommunicationService  << (S,#00AA00) Service >> {
+        Service to perform audio playback to the players.
+        ..
+        + play(String, String, Locale, AudioVariable...): void
+        + playSync(String, String, Locale, AudioVariable...): void
+    }
+}
+
+namespace plan #222222 {
+
+    class PlanDeltaService   << (S,#00AA00) Service >> {
+        Service that calculates the difference between two Plans
+        ..
+    }
+
+    class PlanSetupService   << (S,#00AA00) Service >> {
+            Service that interacts with the player to perform
+             the changes on the physical board
+            ..
+    }
+
+    class PlanLibrary << (C,#AAAA00) Component >> {
+       Library with all available plans.
+       ..
+    }
+
+    class TileLibrary << (C,#AAAA00) Component >> {
+        Library with all available tile.
+        ..
+    }
+
+    class TileTemplate << (C,#AAAA00) Component >> {
+        Template of a tile to be used in plans
+        ..
+    }
+
+    class Plan << (C,#AAAA00) Component >> {
+        Concrete instance of a plan from the plan
+        library which uses multiple tile templates
+        ..
+    }
+
+    Plan .. TileTemplate : uses
+
+    PlanLibrary -> Plan: provides
+    TileLibrary -> TileTemplate : provides
+    PlanLibrary ..> TileLibrary : uses
+    PlanSetupService ..> communication.AudioCommunicationService : uses
+    PlanSetupService ..> devices.GameBoard : uses
+    PlanSetupService ..> devices.PlayerController : uses
+    PlanSetupService ..> PlanDeltaService : uses
+
+    PlanSetupService ..> Plan : uses
+    PlanDeltasService ..> Plan : uses
+
+}
+
+
+
+@enduml

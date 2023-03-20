@@ -5,12 +5,11 @@ import mro.fantasy.game.Size;
 import mro.fantasy.game.devices.board.BoardField;
 import mro.fantasy.game.devices.board.BoardModule;
 import mro.fantasy.game.devices.board.GameBoard;
-import mro.fantasy.game.devices.events.DeviceMessage;
-import mro.fantasy.game.devices.events.DeviceEventHandler;
 import mro.fantasy.game.devices.impl.Color;
 import mro.fantasy.game.engine.events.BoardUpdatedEvent;
 import mro.fantasy.game.engine.events.GameEventListener;
 import mro.fantasy.game.engine.events.impl.AbstractGameEventProducer;
+import mro.fantasy.game.engine.events.impl.BoardUpdatedEventImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -19,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * Implementation of the game board.
@@ -27,7 +27,7 @@ import java.util.List;
  * @since 2022-11-23
  */
 @Component
-public class GameBoardImpl extends AbstractGameEventProducer<BoardUpdatedEvent, GameEventListener<BoardUpdatedEvent>> implements DeviceEventHandler, GameBoard {
+public class GameBoardImpl extends AbstractGameEventProducer<BoardUpdatedEvent, GameEventListener<BoardUpdatedEvent>> implements GameBoard {
 
     /**
      * Logger.
@@ -82,68 +82,71 @@ public class GameBoardImpl extends AbstractGameEventProducer<BoardUpdatedEvent, 
     private BoardModule[][] moduleMatrix;
 
 
-    @Override
-    public void handle(DeviceMessage eventData) {
+    /**
+     * Handles the changed fields that are passed upon an {@link BoardUpdatedEvent} that was triggered by one of the {@link BoardModule}s which were registered for this game board.
+     * This method will convert the coordinates of the fields from the module into the coordinate system of the complete game board bevor raising an event on its own.
+     *
+     * @param changedFields the changed fields
+     */
+    private void handle(List<BoardField> changedFields) {
 
-        if (moduleMatrix == null) {
-            LOG.debug("[{}] - No board modules were configured, skip event processing...", eventData.getDeviceId());
-            return;
-        }
+        // nothing to do here until we have more than one module.
+        broadcastEvent(new BoardUpdatedEventImpl(changedFields));
 
-        switch (eventData.getEventType()) {
-            case BOARD_SENSOR_UPDATE:
-                LOG.debug("[{}] - Handle sensor update, try to find board out of :.= [{}]", eventData.getDeviceId(), boardModules.size());
-
-                var deviceId = eventData.getDeviceId();                          // the ID of the physical module
-                var data = eventData.getData();
-                var fieldCount = Byte.toUnsignedInt(data[0]);                      // the number of fields which have a sensor update
-                var fieldUpdate = new ArrayList<BoardUpdatedEvent.FieldUpdate>();       // the updated fields in the coordinate system of the game board
-                BoardUpdatedEvent event = () -> fieldUpdate;                            // the event that is fired
-
-                Position modulePosition = null;                                         // the position of the field in the coordinate system of the board module
-                byte sensorData = 0;                                                    // the byte with the updated sensor state
-                BoardModule module = null;                                              // the module that sent the update event
-                Position boardPosition = null;                                          // the position of the field in the coordinate system of the game boarf
-
-                for (int f = 0; f < fieldCount; f++) {         // iterate over all updated fields
-                    modulePosition = new Position(data[1 + f * 3], data[2 + f * 3]);
-                    sensorData = data[3 + f * 3];
-
-                    // we need to find the module and update the data structure. The position in the event is always in the coordinate system of a single physical board module
-                    // and we have to convert that to the coordinate system of the whole game board before sending out the game event.
-                    for (int colBoard = 0; colBoard < moduleMatrix.length; colBoard++) {
-                        for (int rowBoard = 0; rowBoard < moduleMatrix[0].length; rowBoard++) {
-                            module = moduleMatrix[colBoard][rowBoard];
-
-                            if (deviceId.equals(module.getId())) {
-                                BoardField field = module.getField(modulePosition);
-                                field.setSensorState(sensorData);
-                                boardPosition = new Position(
-                                        colBoard * module.getSize().columns() + modulePosition.column(),
-                                        rowBoard * module.getSize().rows() + modulePosition.row()
-                                );
-
-                                LOG.trace("[{}] - updated game board position ::= [{}] with board field: {}", eventData.getDeviceId(), boardPosition, field);
-
-                                fieldUpdate.add(new BoardUpdatedEvent.FieldUpdate(
-                                        boardPosition,
-                                        field.isNorthEnabled(),
-                                        field.isEastEnabled(),
-                                        field.isSouthEnabled(),
-                                        field.isWestEnabled()
-                                ));
-                            }
-                        }
-                    }
-                }
-
-                listenerSet.stream().forEach(listener -> listener.onEvent(event));
-                callbacks.forEach(c -> c.setEvent(event));
-                callbacks.clear();
-
-                break;
-            default: // not interested in this event
-        }
+        //  switch (eventData.getEventType()) {
+        // case BOARD_SENSOR_UPDATE:
+        //     LOG.debug("[{}] - Handle sensor update, try to find board out of :.= [{}]", eventData.getDeviceId(), boardModules.size());
+        //
+        //     var deviceId = eventData.getDeviceId();                          // the ID of the physical module
+        //     var data = eventData.getData();
+        //     var fieldCount = Byte.toUnsignedInt(data[0]);                      // the number of fields which have a sensor update
+        //     var fieldUpdate = new ArrayList<BoardUpdatedEvent.FieldUpdate>();       // the updated fields in the coordinate system of the game board
+        //     BoardUpdatedEvent event = () -> fieldUpdate;                            // the event that is fired
+        //
+        //     Position modulePosition = null;                                         // the position of the field in the coordinate system of the board module
+        //     byte sensorData = 0;                                                    // the byte with the updated sensor state
+        //     BoardModule module = null;                                              // the module that sent the update event
+        //     Position boardPosition = null;                                          // the position of the field in the coordinate system of the game boarf
+        //
+        //     for (int f = 0; f < fieldCount; f++) {         // iterate over all updated fields
+        //         modulePosition = new Position(data[1 + f * 3], data[2 + f * 3]);
+        //         sensorData = data[3 + f * 3];
+        //
+        //         // we need to find the module and update the data structure. The position in the event is always in the coordinate system of a single physical board module
+        //         // and we have to convert that to the coordinate system of the whole game board before sending out the game event.
+        //         for (int colBoard = 0; colBoard < moduleMatrix.length; colBoard++) {
+        //             for (int rowBoard = 0; rowBoard < moduleMatrix[0].length; rowBoard++) {
+        //                 module = moduleMatrix[colBoard][rowBoard];
+        //
+        //                 if (deviceId.equals(module.getId())) {
+        //                     BoardField field = module.getField(modulePosition);
+        //                     field.setSensorState(sensorData);
+        //                     boardPosition = new Position(
+        //                             colBoard * module.getSize().columns() + modulePosition.column(),
+        //                             rowBoard * module.getSize().rows() + modulePosition.row()
+        //                     );
+        //
+        //                     LOG.trace("[{}] - updated game board position ::= [{}] with board field: {}", eventData.getDeviceId(), boardPosition, field);
+        //
+        //                     fieldUpdate.add(new BoardUpdatedEvent.FieldUpdate(
+        //                             boardPosition,
+        //                             field.isNorthEnabled(),
+        //                             field.isEastEnabled(),
+        //                             field.isSouthEnabled(),
+        //                             field.isWestEnabled()
+        //                     ));
+        //                 }
+        //             }
+        //         }
+        //     }
+        //
+        //     listenerSet.stream().forEach(listener -> listener.onEvent(event));
+        //     callbacks.forEach(c -> c.setEvent(event));
+        //     callbacks.clear();
+        //
+        //     break;
+        //default: // not interested in this event
+        //}
     }
 
     @Override
@@ -157,6 +160,10 @@ public class GameBoardImpl extends AbstractGameEventProducer<BoardUpdatedEvent, 
 
         // depending on the number of boards the layout is set.
         switch (boardModules.size()) {
+            case 1:
+                this.moduleMatrix = new BoardModule[1][1];
+                this.moduleMatrix[0][0] = boardModules.get(0);
+                break;
             case 2:
                 this.moduleMatrix = new BoardModule[2][1];
                 this.moduleMatrix[0][0] = boardModules.get(0);
@@ -164,11 +171,12 @@ public class GameBoardImpl extends AbstractGameEventProducer<BoardUpdatedEvent, 
                 break;
             default:
                 this.moduleMatrix = null; // in case we call the method twice and the second attempt fails
-                new IllegalStateException("[" + boardModules.size() + "] boards are not supported by the setup");
+                throw new IllegalStateException("[" + boardModules.size() + "] boards are not supported by the setup");
         }
 
         this.moduleSize = this.moduleMatrix[0][0].getSize();
         this.gameBoardSize = new Size(this.moduleMatrix.length * moduleSize.columns(), this.moduleMatrix[0].length * moduleSize.rows());
+
 
     }
 
@@ -232,12 +240,6 @@ public class GameBoardImpl extends AbstractGameEventProducer<BoardUpdatedEvent, 
         return resolve(position).getField();
     }
 
-    @Override
-    public void clearColors() {
-        Arrays.stream(moduleMatrix)                      // all columns, i.e. horizontal modules
-                .flatMap(m -> Arrays.stream(m))     // all rows, i.e. vertical modules
-                .forEach(m -> m.clearColors());       // clear
-    }
 
     @Override
     public String getId() {
@@ -249,10 +251,36 @@ public class GameBoardImpl extends AbstractGameEventProducer<BoardUpdatedEvent, 
         resolve(position).setColor(color);
     }
 
+
     @Override
-    public void sendColorUpdate(boolean clear) {
-        Arrays.stream(moduleMatrix)                               // all columns, i.e. horizontal modules
-                .flatMap(m -> Arrays.stream(m))              // all rows, i.e. vertical modules
-                .forEach(m -> m.sendColorUpdate(clear));       // clear
+    public void sendClearColors() {
+        forEachModule(m -> m.sendClearColors());
     }
+
+    @Override
+    public void sendColorUpdate() {
+        forEachModule(m -> m.sendColorUpdate());
+    }
+
+    @Override
+    public void sendEnableSensors(boolean button, boolean board, boolean edge) {
+        forEachModule(m -> m.sendEnableSensors(button, board, edge));
+    }
+
+    @Override
+    public void sendSetBrightness(int brightness) {
+        forEachModule(m -> m.sendSetBrightness(brightness));
+    }
+
+    /**
+     * Executes the passed function for every module of the gameboard
+     *
+     * @param consumer the function to execute
+     */
+    private void forEachModule(Consumer<BoardModule> consumer) {
+        Arrays.stream(moduleMatrix)                                     // all columns, i.e. horizontal modules
+                .flatMap(Arrays::stream)                                // all rows, i.e. vertical modules
+                .forEach(consumer);
+    }
+
 }

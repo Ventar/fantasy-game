@@ -222,8 +222,7 @@ public final class AudioResourceFileManager {
      */
     public static void main(String[] args) {
 
-        Arrays.stream(args).forEach(resPath -> AudioResourceFileManager.synthesize(Path.of(resPath))
-        );
+        Arrays.stream(args).forEach(resPath -> AudioResourceFileManager.synthesize(Path.of(resPath)));
 
 
     }

@@ -1,13 +1,13 @@
 #include <Adafruit_NeoPixel.h>
 #include <Arduino.h>
 
-#define PIXELS 32
+#define PIXELS 64
 
 Adafruit_NeoPixel strip(PIXELS, 22, NEO_GRB + NEO_KHZ800);
 
 void setup() {
     strip.begin();
-    strip.setBrightness(64);
+    strip.setBrightness(16);
     strip.clear();
     strip.show();
 

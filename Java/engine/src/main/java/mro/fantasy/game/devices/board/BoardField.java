@@ -15,18 +15,33 @@ import mro.fantasy.game.devices.impl.ColorEffect;
 public interface BoardField {
 
     /**
+     * Identifier for a sensor on the board module.
+     *
+     * @author Michael Rodenbuecher
+     * @since 2023-03-10
+     */
+    enum SensorType {
+        Board,
+        North,
+        East,
+        South,
+        West,
+        Button
+    }
+
+    /**
+     * Returns the unique ID of the electronic {@link BoardModule} to which the field belongs
+     *
+     * @return the device ID
+     */
+    String getDeviceID();
+
+    /**
      * Returns the position of the field on the logical module
      *
      * @return the position
      */
     Position getPosition();
-
-    /**
-     * Sets the color of this field
-     *
-     * @param color the color
-     */
-    void setColor(Color color);
 
     /**
      * Returns the color of the field.
@@ -42,86 +57,20 @@ public interface BoardField {
      */
     ColorEffect getEffect();
 
-    /**
-     * Sets the color effect
-     *
-     * @param effect the effect
-     */
-    void setEffect(ColorEffect effect);
 
     /**
-     * Set the enabled state of the northern sensor
-     *
-     * @param northEnabled {@code true} if the sensor is enabled, {@code false} otherwise.
-     */
-    void setNorthEnabled(boolean northEnabled);
-
-    /**
-     * Set the enabled state of the eastern sensor
-     *
-     * @param eastEnabled {@code true} if the sensor is enabled, {@code false} otherwise.
-     */
-    void setEastEnabled(boolean eastEnabled);
-
-    /**
-     * Set the enabled state of the southern sensor
-     *
-     * @param southEnabled {@code true} if the sensor is enabled, {@code false} otherwise.
-     */
-    void setSouthEnabled(boolean southEnabled);
-
-    /**
-     * Set the enabled state of the western sensor
-     *
-     * @param westEnabled {@code true} if the sensor is enabled, {@code false} otherwise.
-     */
-    void setWestEnabled(boolean westEnabled);
-
-    /**
-     * Parses the passed byte and set the sensor state according to the values:
-     * <pre>{@code
-     *    bit  -  | 7 6 5 4   3     2     1     0      |
-     *    data -  | <empty>   west  south east  north  |
-     * }</pre>
-     *
-     * @param state the sensor state
-     */
-    void setSensorState(byte state);
-
-    /**
-     * Returns if the northern sensor is active
+     * Returns if the selected sensor is currently active or not.
      *
      * @return <code>true</code> if the sensor is active, <code>false</code> if not
      */
-    boolean isNorthEnabled();
+    boolean isSensorEnabled(SensorType type);
 
     /**
-     * Returns if the eastern sensor is active
+     * Returns if any edge sensor is enabled. An edge sensor is of type north, east, sout or west.
      *
-     * @return <code>true</code> if the sensor is active, <code>false</code> if not
+     * @return <code>true</code> if any edge sensor is enabled, <code>false</code> otherwise
      */
-    boolean isEastEnabled();
-
-    /**
-     * Returns if the southern sensor is active
-     *
-     * @return <code>true</code> if the sensor is active, <code>false</code> if not
-     */
-    boolean isSouthEnabled();
-
-    /**
-     * Returns if the western sensor is active
-     *
-     * @return <code>true</code> if the sensor is active, <code>false</code> if not
-     */
-    boolean isWestEnabled();
-
-    /**
-     * Returns if any sensor is enabled
-     *
-     * @return <code>true</code> if any sensor is enabled, <code>false</code> otherwise
-     */
-    boolean isAnyEnabled();
+    boolean isAnyEdgeEnabled();
 
 }
 

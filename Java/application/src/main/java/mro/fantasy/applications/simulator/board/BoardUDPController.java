@@ -100,38 +100,38 @@ public class BoardUDPController extends ServiceThread implements DeviceEventHand
         byte[] data = eventData.getData();
 
         switch (DeviceMessageType.fromID(eventData.getEventId())) {
-            case REGISTER:
-                this.serverAddress = Byte.toUnsignedInt(data[0]) + "." + Byte.toUnsignedInt(data[1]) + "." + Byte.toUnsignedInt(data[2]) + "." + Byte.toUnsignedInt(data[3]);
-                this.serverPort = (data[4] & 0xFF) << 8 | (data[5] & 0xFF);
-                LOG.debug("Set server UDP address to ::= [{}:{}]", this.serverAddress, this.serverPort);
-                break;
-            case BOARD_COLOR_CLEAR:
-                model.clearColors();
-                break;
-            case BOARD_COLOR_CLEAR_AND_UPDATE:
-                model.clearColors();
-            case BOARD_COLOR_UPDATE:
-
-                int column, row, red, green, blue, ledCount = 0;
-
-                ledCount = Byte.toUnsignedInt(data[0]);
-                LOG.trace("Try to update ::= [{}] leds", ledCount);
-
-                for (int led = 0; led < ledCount; led++) {
-                    column = Byte.toUnsignedInt(data[1 + led * 5]);
-                    row = Byte.toUnsignedInt(data[2 + led * 5]);
-                    red = Byte.toUnsignedInt(data[3 + led * 5]);
-                    green = Byte.toUnsignedInt(data[4 + led * 5]);
-                    blue = Byte.toUnsignedInt(data[5 + led * 5]);
-
-                    // The swing frame has the 0|0 field in the upper left but the server is based on the lower left corner.
-
-                    model.setColor(column, Configuration.ROWS - row - 1, new Color(red, green, blue));
-                    LOG.trace("Set color of led ({}|{}) to ({},{},{})", column, row, red, green, blue);
-
-                }
-
-                break;
+            // case REGISTER:
+            //     this.serverAddress = Byte.toUnsignedInt(data[0]) + "." + Byte.toUnsignedInt(data[1]) + "." + Byte.toUnsignedInt(data[2]) + "." + Byte.toUnsignedInt(data[3]);
+            //     this.serverPort = (data[4] & 0xFF) << 8 | (data[5] & 0xFF);
+            //     LOG.debug("Set server UDP address to ::= [{}:{}]", this.serverAddress, this.serverPort);
+            //     break;
+            // case BOARD_COLOR_CLEAR:
+            //     model.clearColors();
+            //     break;
+            // case BOARD_COLOR_CLEAR_AND_UPDATE:
+            //     model.clearColors();
+            // case BOARD_COLOR_UPDATE:
+            //
+            //     int column, row, red, green, blue, ledCount = 0;
+            //
+            //     ledCount = Byte.toUnsignedInt(data[0]);
+            //     LOG.trace("Try to update ::= [{}] leds", ledCount);
+            //
+            //     for (int led = 0; led < ledCount; led++) {
+            //         column = Byte.toUnsignedInt(data[1 + led * 5]);
+            //         row = Byte.toUnsignedInt(data[2 + led * 5]);
+            //         red = Byte.toUnsignedInt(data[3 + led * 5]);
+            //         green = Byte.toUnsignedInt(data[4 + led * 5]);
+            //         blue = Byte.toUnsignedInt(data[5 + led * 5]);
+            //
+            //         // The swing frame has the 0|0 field in the upper left but the server is based on the lower left corner.
+            //
+            //         model.setColor(column, Configuration.ROWS - row - 1, new Color(red, green, blue));
+            //         LOG.trace("Set color of led ({}|{}) to ({},{},{})", column, row, red, green, blue);
+            //
+            //     }
+            //
+            //     break;
         }
 
         frame.repaint();
@@ -160,7 +160,7 @@ public class BoardUDPController extends ServiceThread implements DeviceEventHand
                 data[3 + 3 * f] = boardField.getSensorState();
             }
 
-            sendData(DeviceMessageType.BOARD_SENSOR_UPDATE, data);
+        //    sendData(DeviceMessageType.BOARD_SENSOR_UPDATE, data);
 
         }
 

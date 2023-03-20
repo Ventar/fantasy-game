@@ -101,7 +101,105 @@ static const uint32_t Color[] = {
     C(255, 192, 203), // Pink
     C(250, 250, 210), // Light Golden Rod Yellow
     C(245, 255, 250), // Mint Cream
+};
 
+static String GetColorName(uint8_t id) {
+    switch (id) {
+    case 0:
+        return "black";
+    case 1:
+        return "SlateGrey";
+    case 2:
+        return "Gray";
+    case 3:
+        return "Light Grey";
+    case 4:
+        return "White";
+    case 5:
+        return "Dark Red";
+    case 6:
+        return "Crimson";
+    case 7:
+        return "Red";
+    case 8:
+        return "Coral";
+    case 9:
+        return "Orange Red";
+    case 10:
+        return "Orange";
+    case 11:
+        return "Chocolate";
+    case 12:
+        return "Yellow";
+    case 13:
+        return "Gold";
+    case 14:
+        return "Dark Green";
+    case 15:
+        return "Green Yellow";
+    case 16:
+        return "Lawn Green";
+    case 17:
+        return "Lime";
+    case 18:
+        return "Light Green";
+    case 19:
+        return "Spring Green";
+    case 20:
+        return "Light Sea Green";
+    case 21:
+        return "Teal";
+    case 22:
+        return "Aqua";
+    case 23:
+        return "Turquoise";
+    case 24:
+        return "Aqua Marine";
+    case 25:
+        return "Powder Blue";
+    case 26:
+        return "Steel Blue";
+    case 27:
+        return "Corn Flower Blue";
+    case 28:
+        return "Deep Sky Blue";
+    case 29:
+        return "Sky Blue";
+    case 30:
+        return "Midnight Blue";
+    case 31:
+        return "Dark Blue";
+    case 32:
+        return "Medium Blue";
+    case 33:
+        return "Blue";
+    case 34:
+        return "Royal Blue";
+    case 35:
+        return "Blue Violet";
+    case 36:
+        return "Indigo";
+    case 37:
+        return "Medium Purple";
+    case 38:
+        return "Dark Magenta";
+    case 39:
+        return "Dark Violet";
+    case 40:
+        return "Magenta";
+    case 41:
+        return "Orchid";
+    case 42:
+        return "DeepPink";
+    case 43:
+        return "Pink";
+    case 44:
+        return "Light Golden Rod Yellow";
+    case 45:
+        return "Mint Cream";
+    };
+
+    return "unknown";
 };
 
 /**
@@ -122,6 +220,7 @@ class CustomNeoPixel : public Adafruit_NeoPixel {
     /**
      * Sets the color of all pixels to the passed one.
      * @param color the color
+     * @param show if the physical strip should be updated
      */
     void setColor(uint32_t color);
 };

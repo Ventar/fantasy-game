@@ -69,12 +69,11 @@ public enum Color {
     }
 
     /**
-     * Returns the unique integer that represents this color.
+     * Returns the unique ID that represents this color.
      *
      * @return the integer
      */
-    public int getInt() {
-
+    public int getID() {
         return id;
     }
 

@@ -68,6 +68,7 @@ public class AudioCommunicationServiceImpl implements AudioCommunicationService 
     public void loadResources() {
 
         if (resourceProvider == null) {     // Should not happen because of the default classpath provider
+            LOG.warn("No resource provider was configured...");
             return;
         }
 
@@ -89,6 +90,8 @@ public class AudioCommunicationServiceImpl implements AudioCommunicationService 
 
         if (resourceMap.isEmpty()) {
             LOG.warn("\n\n !!! No audio files were found to play back by the AudioCommunicationService !!! \n\n");
+        } else {
+            initialized = true;
         }
 
     }

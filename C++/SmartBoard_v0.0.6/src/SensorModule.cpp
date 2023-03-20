@@ -6,6 +6,7 @@
 #define PCA9555_REG_CONFIG 6
 
 #define I2C_START 0x20
+#define I2C_END 0x26
 #define I2C_BUTTONS 0x20
 #define I2C_SECTOR_0 0x21
 #define I2C_SECTOR_1 0x22
@@ -30,7 +31,7 @@ bool SensorModule::begin() {
 
     uint8_t error = false;
 
-    for (byte address = I2C_START; address < 0x27; address++) {
+    for (byte address = I2C_START; address <= I2C_END; address++) {
         error &= initMultiplexer(address);
     }
 
@@ -38,48 +39,71 @@ bool SensorModule::begin() {
 }
 
 void SensorModule::checkIRQ() {
-    // check if the interrupt was triggered. The PCA9555 interrupt will change to LOW when a port / pin changes its state. A reset is performed when the
-    // register is read the next time. The interrupt that is checked should be the one of the interrupt PCA9555 with address IC2_IRQ
     if (digitalRead(_irq) == 0) {
-        Serial.printf("IRQ channel %d was triggered...\n", _mxChannel);
-        // wait in case other IRQs are triggered, that may happen until the player has finalize the positioning of a tile on the board
-        readMXPins(I2C_IRQ);
-
-        // we only need to perform a read operation if a callback was set and the sensorupdate is enabled.
-        if (_boardEnabled && sensorActive(I2C_IRQ, 8) && _boardCallback) {
-            readMXPins(I2C_BOARD);
-            dumpPinStatesToSerial(I2C_BOARD);
-            _boardCallback(this);
-        }
-
-        if (_buttonEnabled && sensorActive(I2C_IRQ, 10) && _buttonCallback) {
-            uint16_t oldVal = _mxPinStates[0];
-            readMXPins(I2C_BUTTONS);
-
-            // we only want to trigger an event once, when a button was pressed. Releasing a button should not be detected
-            if (oldVal == 0) {
-                _buttonCallback(this);
-            }
-        }
-
-        if (_edgeEnabled && _edgeCallback && (sensorActive(I2C_IRQ, 0) || sensorActive(I2C_IRQ, 7) || sensorActive(I2C_IRQ, 9) || sensorActive(I2C_IRQ, 15))) {
-
-            if (sensorActive(I2C_IRQ, 0)) {
-                readMXPins(I2C_SECTOR_0);
-            }
-            if (sensorActive(I2C_IRQ, 7)) {
-                readMXPins(I2C_SECTOR_1);
-            }
-            if (sensorActive(I2C_IRQ, 15)) {
-                readMXPins(I2C_SECTOR_2);
-            }
-            if (sensorActive(I2C_IRQ, 9)) {
-                readMXPins(I2C_SECTOR_3);
-            }
-
-            _edgeCallback(this);
-        }
+        Serial.printf("\nChannel %d IRQ detected\n", _mxChannel);
+        delay(250);
+        update(); // read all data and perform the callbacks, will reset the pin states
     }
+}
+
+void SensorModule::update() {
+
+    uint32_t now = millis();
+
+    bool changed = false;
+
+    // store the current values in the prev value array for comparison
+    for (uint8_t i = 0; i < 7; i++) {
+        _mxPinStatesPrev[i] = _mxPinStates[i];
+        // Serial.printf("Set 0x%02X to %d\n", 0x20+i, _mxPinStates[i]);
+    }
+
+    // all states are read regardles if the software callback was disabled ornot. Otherwise we will have problems with the physical IRQs of the electronic
+    // components
+    readMXPins(I2C_BOARD);
+    readMXPins(I2C_BUTTONS);
+    readMXPins(I2C_SECTOR_0);
+    readMXPins(I2C_SECTOR_1);
+    readMXPins(I2C_SECTOR_2);
+    readMXPins(I2C_SECTOR_3);
+
+    if (_boardEnabled && _boardCallback && _mxPinStatesPrev[I2C_BOARD - 0x20] != _mxPinStates[I2C_BOARD - 0x20]) {
+        _boardCallback();
+        changed = true;
+    }
+    
+    if (_buttonEnabled && _buttonCallback && _mxPinStatesPrev[I2C_BUTTONS - 0x20] != _mxPinStates[I2C_BUTTONS - 0x20] //&& _mxPinStates[I2C_BUTTONS - 0x20] != 0
+        ) {
+        _buttonCallback();
+        changed = true;
+    }
+
+    if (_edgeEnabled && _edgeCallback &&
+        (_mxPinStatesPrev[I2C_SECTOR_0 - 0x20] != _mxPinStates[I2C_SECTOR_0 - 0x20] ||
+         _mxPinStatesPrev[I2C_SECTOR_1 - 0x20] != _mxPinStates[I2C_SECTOR_1 - 0x20] ||
+         _mxPinStatesPrev[I2C_SECTOR_2 - 0x20] != _mxPinStates[I2C_SECTOR_2 - 0x20] ||
+         _mxPinStatesPrev[I2C_SECTOR_3 - 0x20] != _mxPinStates[I2C_SECTOR_3 - 0x20])) {
+        _edgeCallback();
+        changed = true;
+    }
+
+    if (changed) {
+        Serial.printf("\nChannel %d\n", _mxChannel);
+        dumpPinStatesToSerial();
+        Serial.println("\n-----------------------------------------------");
+    }
+
+    // ensure that the IRQ is reset
+
+    // it is possible that multiple magnets where triggered, wait until a stable situation is available
+    while (_mxPinStatesPrev[I2C_IRQ - 0x20] != _mxPinStates[I2C_IRQ - 0x20]) {
+        delay(20);
+        _mxPinStatesPrev[I2C_IRQ - 0x20] = _mxPinStates[I2C_IRQ - 0x20];
+        Serial.println(".......... IRQ ............................");
+        readMXPins(I2C_IRQ);
+    }
+
+    Serial.printf("Channel %d checked in [%d ms]...\n\n", _mxChannel, millis() - now);
 }
 
 uint16_t SensorModule::readMXPins(uint8_t address) {
@@ -102,6 +126,56 @@ bool SensorModule::sensorActive(uint8_t address, uint8_t pin) {
     }
 }
 
+void SensorModule::setCallback(SensorType type, SensorUpdatedFunction callback) {
+    switch (type) {
+    case EDGE:
+        _edgeCallback = callback;
+        break;
+    case BOARD:
+        _boardCallback = callback;
+        break;
+    case BUTTON:
+        _buttonCallback = callback;
+        break;
+    }
+}
+
+void SensorModule::writeSensorState(SensorType type, uint8_t *dest) {
+
+    switch (type) {
+    case BUTTON:
+        dest[0] = (uint8_t)_mxPinStates[I2C_BUTTONS - 0x20];
+        dest[1] = (uint8_t)(_mxPinStates[I2C_BUTTONS - 0x20] >> 8);
+        break;
+    case BOARD:
+        dest[0] = ~((uint8_t)_mxPinStates[I2C_BOARD - 0x20]); // convert all 1 to 0 and vice versa
+        dest[1] = ~((uint8_t)(_mxPinStates[I2C_BOARD - 0x20] >> 8));
+        break;
+    case EDGE:
+        /*
+            Serial.printf("Write sensor state of board 0x21::= [%d]...\n", _mxPinStates[I2C_SECTOR_0 - 0x20]);
+            Serial.printf("Write sensor state of board 0x22::= [%d]...\n", _mxPinStates[I2C_SECTOR_1 - 0x20]);
+            Serial.printf("Write sensor state of board 0x23::= [%d]...\n", _mxPinStates[I2C_SECTOR_2 - 0x20]);
+            Serial.printf("Write sensor state of board 0x24::= [%d]...\n", _mxPinStates[I2C_SECTOR_3 - 0x20]);
+            */
+
+        dest[0] = ~((uint8_t)_mxPinStates[I2C_SECTOR_0 - 0x20]);
+        dest[1] = ~((uint8_t)(_mxPinStates[I2C_SECTOR_0 - 0x20] >> 8));
+
+        dest[2] = ~((uint8_t)_mxPinStates[I2C_SECTOR_1 - 0x20]);
+        dest[3] = ~((uint8_t)(_mxPinStates[I2C_SECTOR_1 - 0x20] >> 8));
+
+        dest[4] = ~((uint8_t)_mxPinStates[I2C_SECTOR_2 - 0x20]);
+        dest[5] = ~((uint8_t)(_mxPinStates[I2C_SECTOR_2 - 0x20] >> 8));
+
+        dest[6] = ~((uint8_t)_mxPinStates[I2C_SECTOR_3 - 0x20]);
+        dest[7] = ~((uint8_t)(_mxPinStates[I2C_SECTOR_3 - 0x20] >> 8));
+
+    default:
+        break;
+    }
+}
+
 void SensorModule::dumpPinStatesToSerial(uint8_t address) {
 
     Serial.print("0x");
@@ -112,7 +186,7 @@ void SensorModule::dumpPinStatesToSerial(uint8_t address) {
     for (uint8_t pin = 0; pin < 16; pin++) {
 
         Serial.print(" ");
-        Serial.print(sensorActive(address, pin));
+        Serial.print(sensorActive(address, pin) ? "x" : " ");
         Serial.print(" ");
     }
 
@@ -120,9 +194,9 @@ void SensorModule::dumpPinStatesToSerial(uint8_t address) {
 }
 
 void SensorModule::dumpPinStatesToSerial() {
-    Serial.println("       0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15");
+    Serial.println("      0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15");
 
-    for (byte address = I2C_START; address < 0x27; address++) {
+    for (byte address = I2C_START; address <= I2C_END; address++) {
         dumpPinStatesToSerial(address);
     }
 }
@@ -147,15 +221,13 @@ bool SensorModule::initMultiplexer(uint8_t address) {
         return false;
     }
 
-    // the IRQ multiplexer is not fully used, i.e. we set the not used ports to output to avoid random states and interrupts
-    if (address != I2C_IRQ) {
-        writeRegister(address, PCA9555_REG_CONFIG, 0xFF);
-        writeRegister(address, PCA9555_REG_CONFIG + 1, 0xFF);
-    } else {
+    if (address == I2C_IRQ) {
+        // not all ports of the multiplexer are used. Set the unused ot OUTPUT
         writeRegister(address, PCA9555_REG_CONFIG, 0x81);
         writeRegister(address, PCA9555_REG_CONFIG + 1, 0x87);
-        // writeRegister(address, PCA9555_REG_CONFIG, 0x0);
-        // writeRegister(address, PCA9555_REG_CONFIG + 1, 0x0);
+    } else {
+        writeRegister(address, PCA9555_REG_CONFIG, 0xFF);
+        writeRegister(address, PCA9555_REG_CONFIG + 1, 0xFF);
     }
 
     // we need to read the values here because it is possible that some magnets

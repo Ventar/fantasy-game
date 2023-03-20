@@ -13,6 +13,50 @@
 
 bundleName: Base Game
 resources: # <- change to resources to make it generic
+  #     ┌─────────┬─────────┐
+  #     │         │         │
+  #     │   1/0   │   1/1   │
+  #     │         │         │
+  #     ├─────────┼─────────┤
+  #     │         │         │
+  #     │   0/0   │   1/0   │
+  #     │ 0°      │         │
+  #     └─────────┴─────────┘
+  # Color: Mechanicus Gray Base
+  #        Grey Seer Dry brush
+  #        Grey Seer + White Dry Bush
+  #        Nuln Oil + Agrax Earthshade Shade + a little bit Green Shade
+  #        Grey Seer Dry brush
+  #        Grey Seer + White Dry Bush
+  - id: BGT001
+    type: DUNGEON_FLOOR
+    name: Default Floor 2x2
+    description: basic dungeon floor
+    audioBundleName: Tile Base Game
+    audioKey: tiles.base.game.001
+    sizeColumns: 2
+    sizeRows: 2
+    fields:
+      - column: 0
+        row: 0
+        los: false
+        move: false
+        enter: true
+      - column: 1
+        row: 0
+        los: false
+        move: false
+        enter: true
+      - column: 0
+        row: 1
+        los: false
+        move: false
+        enter: true
+      - column: 1
+        row: 1
+        los: false
+        move: false
+        enter: true
 
   #     ┌─────────┬─────────┐
   #     │         │         │
@@ -23,12 +67,19 @@ resources: # <- change to resources to make it generic
   #     │   0/0   │   1/0   │
   #     │ 0°      │         │
   #     └─────────┴─────────┘
-  - id: BGT001
+  # Color: Mechanicus Gray Base
+  #        Skrag Brown
+  #        Gore Grunta Fur
+  #        Baneblade Brown Dry Brush
+  #        Skrag Brown + Wraithbone Dry Brush
+  #        Skeleton Horde
+  #        Casanora Yellow Shade
+  - id: BGT002
     type: DUNGEON_FLOOR
     name: Default Floor 2x2
     description: basic dungeon floor
     audioBundleName: Tile Base Game
-    audioKey: tiles.base.game.001
+    audioKey: tiles.base.game.002
     sizeColumns: 2
     sizeRows: 2
     fields:
@@ -62,7 +113,7 @@ resources: # <- change to resources to make it generic
   #     │   0/0   │   1/0   │
   #     │ 0°      │         │
   #     └─────────┴─────────┘
-  - id: BGT002
+  - id: BGT099
     type: DUNGEON_FLOOR
     name: Flame Pillar 2x2
     description: dungeon floor with a large flame pillar

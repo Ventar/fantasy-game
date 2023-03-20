@@ -3,6 +3,7 @@ package mro.fantasy.game.devices.discovery.impl;
 import mro.fantasy.game.devices.board.BoardModule;
 import mro.fantasy.game.devices.board.impl.BoardModuleImpl;
 import mro.fantasy.game.devices.discovery.DeviceDiscoveryService;
+import mro.fantasy.game.devices.events.DeviceEventService;
 import mro.fantasy.game.devices.events.impl.UDPDeviceEventServiceImpl;
 import mro.fantasy.game.engine.events.impl.EventThreadPool;
 import mro.fantasy.game.utils.NetworkConfiguration;
@@ -10,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
 import javax.jmdns.JmDNS;
@@ -51,6 +53,18 @@ public class DeviceDiscoveryServiceImpl implements DeviceDiscoveryService {
      */
     @Value("${game.device.board.count}")
     private int numberOfBoards;
+
+    /**
+     * Application context for manual bean creation
+     */
+    @Autowired
+    private ApplicationContext applicationContext;
+
+    /**
+     * Service that is responsible for the handling of incoming events from devices.
+     */
+    @Autowired
+    private DeviceEventService eventService;
 
     /**
      * Threadpool to manage the discovery future.
@@ -116,6 +130,7 @@ public class DeviceDiscoveryServiceImpl implements DeviceDiscoveryService {
 
             try {
                 BoardModuleImpl boardModule = new BoardModuleImpl(serviceEvent.getName(), serviceEvent.getInfo().getInetAddresses()[0], serviceEvent.getInfo().getPort());
+                applicationContext.getAutowireCapableBeanFactory().autowireBean(boardModule); // fill all @Autowired annotated fields in the device
 
                 if (boardModules.contains(boardModule)) {
                     LOG.debug("[{}] - module with the given ID was already registered, skip registration...", boardModule.getId());
@@ -124,6 +139,7 @@ public class DeviceDiscoveryServiceImpl implements DeviceDiscoveryService {
 
                 boardModule.sendRegister(networkConfiguration.getAdapterIPAddress(), networkConfiguration.getEventUDPPort());
                 boardModules.add(boardModule);
+                eventService.addDeviceEventHandler(boardModule);
                 LOG.info("[{}] - found board module ::= [{}]", boardModule.getId(), boardModule);
             } catch (IOException e) {
                 LOG.warn("Cannot register board module with id ::= [{}]:", serviceEvent.getName(), e);

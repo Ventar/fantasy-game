@@ -1,16 +1,16 @@
 package mro.fantasy.game.devices.impl;
 
 import mro.fantasy.game.devices.events.DeviceMessage;
-import mro.fantasy.game.devices.events.DeviceMessageType;
 import mro.fantasy.game.devices.events.impl.UDPDeviceEventServiceImpl;
+import mro.fantasy.game.engine.events.GameEvent;
+import mro.fantasy.game.engine.events.GameEventListener;
+import mro.fantasy.game.engine.events.impl.AbstractGameEventProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 /**
@@ -19,7 +19,7 @@ import java.util.Objects;
  * @author Michael Rodebuecher
  * @since 2022-08-22
  */
-public class AbstractDevice {
+public abstract class AbstractDevice<E extends GameEvent, L extends GameEventListener<E>> extends AbstractGameEventProducer<E, L> {
 
     /**
      * Logger.
@@ -121,9 +121,8 @@ public class AbstractDevice {
     }
 
     /**
-     * Sends a {@link DeviceMessageType#REGISTER} UDP message to the passed address with the ip address and UDP port of the server.
+     * Sends a {@link ServerMessageType#REGISTER} UDP message to the passed address with the ip address and UDP port of the server.
      *
-     * @param deviceId      the id of the server device.
      * @param serverAddress the IP address of the server to send the message to
      * @param serverUDPPort the UDP port of the server to send the message to
      */
@@ -134,10 +133,10 @@ public class AbstractDevice {
         byte[] data = new byte[6];                                                // data part of the DeviceDataPackage
 
         String[] ipParts = serverAddress.split("\\.");     // IP address
-        data[0] = (byte) Integer.valueOf(ipParts[0]).intValue();
-        data[1] = (byte) Integer.valueOf(ipParts[1]).intValue();
-        data[2] = (byte) Integer.valueOf(ipParts[2]).intValue();
-        data[3] = (byte) Integer.valueOf(ipParts[3]).intValue();
+        data[0] = (byte) Integer.parseInt(ipParts[0]);
+        data[1] = (byte) Integer.parseInt(ipParts[1]);
+        data[2] = (byte) Integer.parseInt(ipParts[2]);
+        data[3] = (byte) Integer.parseInt(ipParts[3]);
 
         data[4] = (byte) (serverUDPPort >>> 8);                                   // UDP port
         data[5] = (byte) (serverUDPPort);
@@ -148,7 +147,7 @@ public class AbstractDevice {
             Thread.sleep(100);
             sendData(ServerMessageType.REGISTER, data);
         } catch (Exception e) {
-            LOG.warn("Could not send data package:",  e);
+            LOG.warn("Could not send data package:", e);
         }
     }
 
@@ -157,7 +156,7 @@ public class AbstractDevice {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         AbstractDevice that = (AbstractDevice) o;
-        return Objects.equals(deviceId, that.deviceId);
+        return deviceId.equals(that.deviceId);
     }
 
     @Override
@@ -176,9 +175,4 @@ public class AbstractDevice {
     }
 
 
-    public static void main(String[] args) throws Exception {
-        DatagramSocket socket = new DatagramSocket();
-        DatagramPacket p = new DatagramPacket("Hello".getBytes(StandardCharsets.UTF_8), 5, InetAddress.getByName("192.168.51.58"), 4669);
-        socket.send(p);
-    }
 }

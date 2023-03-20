@@ -6,8 +6,6 @@ import mro.fantasy.game.devices.board.BoardModule;
 import mro.fantasy.game.devices.impl.Color;
 import mro.fantasy.game.utils.Condition;
 
-import java.io.IOException;
-
 /**
  * A utility class to visualize a board module for testing purposes. The model and view are combined in one class here.
  * <p>
@@ -139,7 +137,7 @@ public class BoardModuleRenderer {
 
             switch (cellRow) {
                 case 0:
-                    if (field.isNorthEnabled()) {
+                    if (field.isSensorEnabled(BoardField.SensorType.North)) {
                         buf.append(fill.repeat(CELL_WIDTH / 2 - 1));
                         buf.append(SENSOR_ON);
                         buf.append(fill.repeat(CELL_WIDTH / 2 - 1));
@@ -148,14 +146,14 @@ public class BoardModuleRenderer {
                     }
                     break;
                 case 1:
-                    if (field.isEastEnabled() && field.isWestEnabled()) {
+                    if (field.isSensorEnabled(BoardField.SensorType.East) && field.isSensorEnabled(BoardField.SensorType.West)) {
                         buf.append(SENSOR_ON);
                         buf.append(fill.repeat(CELL_WIDTH - 4));
                         buf.append(SENSOR_ON);
-                    } else if (field.isEastEnabled()) {
+                    } else if (field.isSensorEnabled(BoardField.SensorType.East)) {
                         buf.append(SENSOR_ON);
                         buf.append(fill.repeat(CELL_WIDTH - 3));
-                    } else if (field.isWestEnabled()) {
+                    } else if (field.isSensorEnabled(BoardField.SensorType.West)) {
                         buf.append(fill.repeat(CELL_WIDTH - 3));
                         buf.append(SENSOR_ON);
                     } else {
@@ -163,7 +161,7 @@ public class BoardModuleRenderer {
                     }
                     break;
                 case 2:
-                    if (field.isSouthEnabled()) {
+                    if (field.isSensorEnabled(BoardField.SensorType.South)) {
                         buf.append(fill.repeat(CELL_WIDTH / 2 - 1));
                         buf.append(SENSOR_ON);
                         buf.append(fill.repeat(CELL_WIDTH / 2 - 1));
@@ -207,22 +205,22 @@ public class BoardModuleRenderer {
         buf.append("\n");
     }
 
-    public static void main(String[] args) throws IOException {
-        BoardModule module = new BoardModuleImpl("A1", null, 0);
-        module.getField(new Position(3, 2)).setNorthEnabled(true);
-        module.getField(new Position(0, 2)).setWestEnabled(true);
-        module.getField(new Position(0, 2)).setEastEnabled(true);
-        module.getField(new Position(1, 5)).setSouthEnabled(true);
-
-        module.getField(new Position(4, 2)).setWestEnabled(true);
-        module.getField(new Position(4, 1)).setEastEnabled(true);
-        module.getField(new Position(4, 1)).setColor(Color.Red;
-        module.getField(new Position(5, 4)).setColor(Color.Red);
-
-        BoardModuleRenderer renderer = new BoardModuleRenderer();
-        renderer.render(module);
-
-    }
+    // public static void main(String[] args) throws IOException {
+    //     BoardModule module = new BoardModuleImpl("A1", null, 0);
+    //     module.getField(new Position(3, 2)).setNorthEnabled(true);
+    //     module.getField(new Position(0, 2)).setWestEnabled(true);
+    //     module.getField(new Position(0, 2)).setEastEnabled(true);
+    //     module.getField(new Position(1, 5)).setSouthEnabled(true);
+    //
+    //     module.getField(new Position(4, 2)).setWestEnabled(true);
+    //     module.getField(new Position(4, 1)).setEastEnabled(true);
+    //     module.getField(new Position(4, 1)).setColor(Color.Red);
+    //     module.getField(new Position(5, 4)).setColor(Color.Red);
+    //
+    //     BoardModuleRenderer renderer = new BoardModuleRenderer();
+    //     renderer.render(module);
+    //
+    // }
 
 
 }

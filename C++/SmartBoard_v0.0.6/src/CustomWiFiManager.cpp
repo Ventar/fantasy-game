@@ -22,6 +22,8 @@ CustomWiFiManager::CustomWiFiManager(char const *apName, std::function<void(WiFi
     setCleanConnect(true);
     // wifiManager.setSaveConfigCallback([]() { ESP.restart(); });
     setAPCallback(configCallback);
+    connect();
+
 };
 
 void CustomWiFiManager::connect() {

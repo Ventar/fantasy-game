@@ -16,13 +16,10 @@ public enum ServerMessageType {
      * Event send from the server to the client to inform the client about the IP address and the UDP port of the  server.
      * <p>
      * <pre>{@code
-     *  part -  | HEADER   |  DATA                  |
-     *  byte -  |  0  - 8  | 9 - 12     | 13 - 14   |
-     *  data -  |          | ip address | UDP port  |
+     *  part -  | EVENT ID   |  DATA                  |
+     *  byte -  |  0         | 1 - 4      | 5 - 6     |
+     *  data -  |            | ip address | UDP port  |
      * }</pre>
-     * <p>
-     * Direction: SERVER -> CLIENT
-     *
      * @see DeviceMessage
      */
     REGISTER(0),
@@ -31,12 +28,10 @@ public enum ServerMessageType {
      * Event send from the server to a physical {@link BoardModule} to clear all colors.
      * <p>
      * <pre>{@code
-     *  part -  | HEADER   |
-     *  byte -  |  0  - 8  |
-     *  data -  |          |
+     *  part -  | EVENT ID   |
+     *  byte -  |  0         |
+     *  data -  |  1         |
      * }</pre>
-     * <p>
-     * Direction: SERVER -> CLIENT
      *
      * @see DeviceMessage
      */
@@ -46,34 +41,43 @@ public enum ServerMessageType {
      * Event send from the server to a physical {@link BoardModule} when the {@link BoardModule#sendColorUpdate(boolean)} method is called.
      * <p>
      * <pre>{@code
-     *  part -  | HEADER   |  DATA                                      |
-     *  byte -  |  0  - 8  | 9      | 10     | 11  | 12  | 13    | 14   |
-     *  data -  |          | count  | column | row | red | green | blue |
-     *                              | repeated count times              |
+     *  part -  | EVENT ID |  DATA                          |
+     *  byte -  |  0       | 1      | 2      | 3            |
+     *  data -  |  2       | count  | led ID | led color    |
+     *                              | repeated count times  |
      * }</pre>
-     * <p>
-     * Direction: SERVER -> CLIENT
      *
      * @see DeviceMessage
      */
     BOARD_COLOR_UPDATE(2),
 
     /**
-     * Event send from the server to a physical {@link BoardModule} when the {@link BoardModule#sendColorUpdate(boolean)} method is called, clears all colors on the board and
-     * replace them with the ones which were set with the {@link BoardModule#setColor(Position, Color)} method before.
+     * Enables or disables the sensors of the board. If the responsible bit is set to 1 the sensors are enabled, otherwise they are disabled.
      * <p>
      * <pre>{@code
-     *  part -  | HEADER   |  DATA                                      |
-     *  byte -  |  0  - 8  | 9      | 10     | 11  | 12  | 13    | 14   |
-     *  data -  |          | count  | column | row | red | green | blue |
-     *                              | repeated count times              |
+     *  part -  | EVENT ID |  DATA                                                                      |
+     *  byte -  |  0       | 8 .. 7 .. 6 .. 5 .. 4 .. 3 .. 2 ............ 1 .............. 0 .......... |
+     *  data -  |  3       |                               board enable   button enabled   edge enabled |
+     *
      * }</pre>
+    *
+     * @see DeviceMessage
+     */
+    BOARD_ENABLE_SENSOR(3),
+
+    /**
+     * Enables or disables the sensors of the board. If the responsible bit is set to 1 the sensors are enabled, otherwise they are disabled.
      * <p>
-     * Direction: SERVER -> CLIENT
+     * <pre>{@code
+     *  part -  | EVENT ID |  DATA         |
+     *  byte -  |  0       | 1             |
+     *  data -  |  4        | brightness    |
+     *
+     * }</pre>
      *
      * @see DeviceMessage
      */
-    BOARD_COLOR_CLEAR_AND_UPDATE(3);
+    BOARD_SET_BRIGHTNESS(4);
 
     /**
      * The unique ID of the event

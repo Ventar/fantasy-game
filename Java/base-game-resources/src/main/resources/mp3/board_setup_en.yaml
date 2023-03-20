@@ -1,0 +1,9 @@
+bundleName: Board Setup
+locale: en
+resources:
+- key: board.setup.tutorial.1
+  hash: 53f857d1aef6108748e1b229928d031c9efbe7f665ad79b74e86b981e5c2eaf3
+  ssml: |-
+    <speak>
+     We will start with the setup of your mission now. Please ensure that all board modules are connected to the power supply and to your Wireless network.
+    </speak>

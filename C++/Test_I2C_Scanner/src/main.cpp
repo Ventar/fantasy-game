@@ -39,6 +39,10 @@ void setup()
   while (!Serial)
     ; // Leonardo: wait for serial monitor
   Serial.println("\nI2C Scanner");
+
+  Wire.beginTransmission(0x70);
+    Wire.write(1 << 4);
+    Wire.endTransmission();
 }
 
 void loop()

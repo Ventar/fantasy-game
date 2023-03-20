@@ -96,6 +96,24 @@ public class AudioResourceBundle implements ResourceBundle<AudioResource> {
     private static final String STR_RESOURCES = "resources";
 
     /**
+     * During the process of speech synthesize a resolver may not be available. To have a warning message we create a default implementation to use there that logs a warning.
+     */
+    private static AudioResourceMP3FileResolver EMPTY_RESOLVER = new AudioResourceMP3FileResolver() {
+        @Override
+        public InputStream resolve(AudioResource audioResource) {
+            LOG.warn("No implementation available to resolve MP3 streams.");
+            return null;
+
+        }
+
+        @Override
+        public String getStreamInfo(AudioResource audioResource) {
+            LOG.warn("No implementation available to resolve MP3 streams.");
+            return "n/a";
+        }
+    };
+
+    /**
      * The name of the bundle.
      */
     private String bundleName;
@@ -135,22 +153,9 @@ public class AudioResourceBundle implements ResourceBundle<AudioResource> {
     public AudioResourceBundle(Resource res, AudioResourceMP3FileResolver resolver) {
         Objects.requireNonNull(res, "The resource dataInputStream cannot be null.");
 
-        // if no stream function is provided, which can be the case if this bundle is used by the speech synthesizer we add a default implementation
-        // to throw an exception, just to be on the safe side.
-
         if (resolver == null) {
             LOG.warn("MP3 stream function is null, set default implementation which will throw an exception. This should only be used in conjunction with a SpeechSynthesizer");
-            this.mp3StreamFunction = new AudioResourceMP3FileResolver() {
-                @Override
-                public InputStream resolve(AudioResource audioResource) {
-                    throw new IllegalArgumentException("No implementation available to resolve MP3 streams.");
-                }
-
-                @Override
-                public String getStreamInfo(AudioResource audioResource) {
-                    throw new IllegalArgumentException("No implementation available to resolve MP3 streams.");
-                }
-            };
+            this.mp3StreamFunction = EMPTY_RESOLVER;
         } else {
             this.mp3StreamFunction = resolver;
         }
@@ -178,22 +183,9 @@ public class AudioResourceBundle implements ResourceBundle<AudioResource> {
 
         Objects.requireNonNull(dataInputStream, "The resource dataInputStream cannot be null.");
 
-        // if no stream function is provided, which can be the case if this bundle is used by the speech synthesizer we add a default implementation
-        // to throw an exception, just to be on the safe side.
-
         if (resolver == null) {
             LOG.warn("MP3 stream function is null, set default implementation which will throw an exception. This should only be used in conjunction with a SpeechSynthesizer");
-            this.mp3StreamFunction = new AudioResourceMP3FileResolver() {
-                @Override
-                public InputStream resolve(AudioResource audioResource) {
-                    throw new IllegalArgumentException("No implementation available to resolve MP3 streams.");
-                }
-
-                @Override
-                public String getStreamInfo(AudioResource audioResource) {
-                    throw new IllegalArgumentException("No implementation available to resolve MP3 streams.");
-                }
-            };
+            this.mp3StreamFunction = EMPTY_RESOLVER;
         } else {
             this.mp3StreamFunction = resolver;
         }

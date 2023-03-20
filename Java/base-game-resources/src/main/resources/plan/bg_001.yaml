@@ -63,3 +63,12 @@ resources: # <- change to resources to make it generic
         tiles:
           - position: (8|4)
             rotation: 270°
+  - id: BG002
+    name: Setup Demo
+    description: Demo Plan to perform a setup
+    size: 8x8
+    templates:
+      - tileNumber: BGT001 # Default Floor 2x2
+        tiles:
+          - position: (0|0)
+            rotation: 0°

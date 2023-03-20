@@ -4,6 +4,9 @@ import mro.fantasy.game.Position;
 import mro.fantasy.game.Size;
 import mro.fantasy.game.devices.board.impl.BoardFieldImpl;
 import mro.fantasy.game.devices.impl.Color;
+import mro.fantasy.game.engine.events.BoardUpdatedEvent;
+import mro.fantasy.game.engine.events.GameEventListener;
+import mro.fantasy.game.engine.events.GameEventProducer;
 
 /**
  * Represents a physical board module.
@@ -56,7 +59,17 @@ import mro.fantasy.game.devices.impl.Color;
  * @author Michael Rodenbuecher
  * @since 2022-08-19
  */
-public interface BoardModule {
+public interface BoardModule extends GameEventProducer<BoardUpdatedEvent, GameEventListener<BoardUpdatedEvent>> {
+
+    /**
+     *
+     */
+    enum BoardRotation {
+        D0,
+        D90,
+        D180,
+        D270
+    }
 
     /**
      * Returns the size, i.e. number {@link BoardFieldImpl}s in columns and rows, of this module
@@ -74,11 +87,6 @@ public interface BoardModule {
      */
     BoardField getField(Position position);
 
-    /**
-     * Clears all colors on the physical module. The UDP message is send immediately to the module. If the {@link #setColor(Position, Color)} was used without sending the data with
-     * the {@link #sendColorUpdate(boolean)} method, the colors will be cleared.
-     */
-    void clearColors();
 
     /**
      * Returns the unique ID of the board module.
@@ -87,22 +95,47 @@ public interface BoardModule {
 
     /**
      * Changes the color of the field of the given position. The transmission of this information to the physical module is not triggered automatically but started when the {@link
-     * #sendColorUpdate(boolean)} method is called. This will allow the caller to set multiple colors which are sent with one UDP datagram packet.
+     * #sendColorUpdate()} method is called. This will allow the caller to set multiple colors which are sent with one UDP datagram packet.
      *
      * @param position the position to set
-     * @param color    the new color. A color of {@link Color#OFF} which is essentially BLACK will turn off the LED
+     * @param color    the new color. A color of {@link Color#Black} which is essentially BLACK will turn off the LED
      *
      * @throws IllegalArgumentException in case a passed parameter is {@code null} or the passed position does not exist on the module
-     * @see #sendColorUpdate(boolean)
+     * @see #sendColorUpdate()
      */
     void setColor(Position position, Color color);
 
     /**
      * Sends the update of all colors which were changed with the {@link #setColor(Position, Color)} since the last call to {@link #setColor(Position, Color)} or {@link
-     * #clearColors()}.
-     *
-     * @param clear if the board leds should be cleared before setting the new ones.
+     * #sendClearColors()}.
      */
-    void sendColorUpdate(boolean clear);
+    void sendColorUpdate();
+
+    /**
+     * Clears all colors on the physical module. The UDP message is send immediately to the module. If the {@link #setColor(Position, Color)} was used without sending the data with
+     * the {@link #sendColorUpdate()} method, the colors will be cleared.
+     */
+    void sendClearColors();
+
+    /**
+     * Sets the brightness of the LED strip for a board module vom 0% (0) to 100% (255).
+     *
+     * @param brightness the brightness from 0 to 100 in %
+     */
+    void sendSetBrightness(int brightness);
+
+    /**
+     * Enables or disables the sensors of the physical board modules. If a sensor is disabled no events of the corresponding type will be sent by the board anymore. This can be
+     * used to avoid error handling for irrelevant cases. If you wait for a button event and the player shouldn't add / remove / move something on the game board, disabling the
+     * BOARD and EDGE sensors can avoid false positives during the interaction. In addition, disabled sensors reduce the overall processing time of the physical board module and my
+     * increase the responsiveness of the hardware.
+     * <p>
+     * The method will always set the state of all sensors, i.e. the full expected value set (all three boolean values) have to be provided, there is no delta calculation.
+     *
+     * @param button if the button sensor type is enabled or not
+     * @param board  if the board sensor type is enabled or not
+     * @param edge   if the edge sensor type is enabled or not
+     */
+    void sendEnableSensors(boolean button, boolean board, boolean edge);
 
 }

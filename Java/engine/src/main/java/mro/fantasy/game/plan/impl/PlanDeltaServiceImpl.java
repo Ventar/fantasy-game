@@ -1,7 +1,7 @@
 package mro.fantasy.game.plan.impl;
 
-import mro.fantasy.game.plan.PlanDeltaService;
 import mro.fantasy.game.plan.Plan;
+import mro.fantasy.game.plan.PlanDeltaService;
 import mro.fantasy.game.plan.Tile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,17 +23,7 @@ public class PlanDeltaServiceImpl implements PlanDeltaService {
      */
     private static final Logger LOG = LoggerFactory.getLogger(PlanDeltaServiceImpl.class);
 
-    /**
-     * Calculates a change between the original and the changed plan. There are different {@link ChangeType}s which are checked. By comparing the {@link Tile#getId()} added and
-     * removed tiles can be detected. If the changed plan has a tile with an ID that is not in the original plan it was {@link ChangeType#TILE_ADDED}, if the original plan has a
-     * tile with an ID that is not in the changed plan it was {@link ChangeType#TILE_REMOVED}. For the {@link ChangeType#TILE_MOVED} check the {@link Tile#getPosition()} of the
-     * tiles with the same ID is compared between the original and the changed plan tiles. If the position has changed the tile was moved.
-     *
-     * @param original the original plan
-     * @param changed  the changed plan
-     *
-     * @return the delta between original and changed.
-     */
+    @Override
     public Map<ChangeType, List<Tile>> calculateChange(Plan original, Plan changed) {
 
         LOG.debug("Start delta calculation for plan :.= [{}]", original.getName());

@@ -1,9 +1,5 @@
 package mro.fantasy.game.devices.events;
 
-import mro.fantasy.game.Position;
-import mro.fantasy.game.devices.board.BoardModule;
-import mro.fantasy.game.devices.impl.Color;
-
 /**
  * Shared message types for all devices. The messages are specified here to have a common place for the documentation regardless of the used device.
  *
@@ -13,88 +9,149 @@ import mro.fantasy.game.devices.impl.Color;
 public enum DeviceMessageType {
 
     /**
-     * Event send from the server to the client to inform the client about the IP address and the UDP port of the  server.
+     * Event send from a board device to the server when a button on the board was pressed. The following overview shows which colum and row is encoded in which byte of the
+     * message
      * <p>
      * <pre>{@code
-     *  part -  | HEADER   |  DATA                  |
-     *  byte -  |  0  - 8  | 9 - 12     | 13 - 14   |
-     *  data -  |          | ip address | UDP port  |
+     *  byte - | HEADER   |
+     *  data - |  0  - 7  |
+     *
+     *  byte - | 8                                               |
+     *  bit  - |   7     6     5     4     3     2     1     0   |
+     *  data - | (3|1) (2|1) (3|0) (2|0) (1|1) (0|1) (1|0) (0|0) |
+     *
+     *  byte - | 9                                              |
+     *  bit  - |   7     6     5     4     3     2     1     0   |
+     *  data - | (3|3) (2|3) (3|2) (2|2) (1|3) (0|3) (1|2) (0|2) |
+     *
+     *  byte - | 10                                              |
+     *  bit  - |   7     6     5     4     3     2     1     0   |
+     *  data - | (7|1) (6|1) (7|0) (6|0) (5|1) (4|1) (5|0) (4|0) |
+     *
+     *  byte - | 11                                              |
+     *  bit  - |   7     6     5     4     3     2     1     0   |
+     *  data - | (7|3) (6|3) (7|2) (6|2) (5|3) (4|3) (5|2) (4|2) |
+     *
+     *  byte - | 12                                              |
+     *  bit  - |   7     6     5     4     3     2     1     0   |
+     *  data - | (3|5) (2|5) (3|4) (2|4) (1|5) (0|5) (1|4) (0|4) |
+     *
+     *  byte - | 13                                              |
+     *  bit  - |   7     6     5     4     3     2     1     0   |
+     *  data - | (3|7) (2|7) (3|6) (2|6) (1|7) (0|7) (1|6) (0|6) |
+     *
+     *  byte - | 14                                              |
+     *  bit  - |   7     6     5     4     3     2     1     0   |
+     *  data - | (7|5) (6|5) (7|4) (6|4) (5|5) (4|5) (5|4) (4|4) |
+     *
+     *  byte - | 15                                              |
+     *  bit  - |   7     6     5     4     3     2     1     0   |
+     *  data - | (7|7) (6|7) (7|6) (6|6) (5|7) (4|7) (5|6) (4|6) |
      * }</pre>
      * <p>
-     * Direction: SERVER -> CLIENT
      *
      * @see DeviceMessage
      */
-    REGISTER(0),
+    BOARD_BUTTON_PRESSED(0),
 
     /**
-     * Event send from the server to a physical {@link BoardModule} when the {@link BoardModule#sendColorUpdate(boolean)} method is called.
+     * Event send from a board device to the server when a board sensor detects a magnetic field. The following overview shows which colum and row is encoded in which byte of the
+     * message
      * <p>
      * <pre>{@code
-     *  part -  | HEADER   |  DATA                                      |
-     *  byte -  |  0  - 8  | 9      | 10     | 11  | 12  | 13    | 14   |
-     *  data -  |          | count  | column | row | red | green | blue |
-     *                              | repeated count times              |
+     *  byte - | HEADER   |
+     *  data - |  0  - 7  |
+     *
+     *  byte - | 8                                               |
+     *  bit  - |   7     6     5     4     3     2     1     0   |
+     *  data - | (3|1) (2|1) (3|0) (2|0) (1|1) (0|1) (1|0) (0|0) |
+     *
+     *  byte - | 9                                               |
+     *  bit  - |   7     6     5     4     3     2     1     0   |
+     *  data - | (1|3) (0|3) (1|2) (0|2) (3|3) (2|3) (3|2) (2|2) |
+     *
+     *  byte - | 10                                              |
+     *  bit  - |   7     6     5     4     3     2     1     0   |
+     *  data - | (7|1) (6|1) (7|0) (6|0) (5|1) (4|1) (5|0) (4|0) |
+     *
+     *  byte - | 11                                              |
+     *  bit  - |   7     6     5     4     3     2     1     0   |
+     *  data - | (5|3) (4|3) (5|2) (4|2) (7|3) (6|3) (7|2) (6|2) |
+     *
+     *  byte - | 12                                              |
+     *  bit  - |   7     6     5     4     3     2     1     0   |
+     *  data - | (3|5) (2|5) (3|4) (2|4) (1|5) (0|5) (1|4) (0|4) |
+     *
+     *  byte - | 13                                              |
+     *  bit  - |   7     6     5     4     3     2     1     0   |
+     *  data - | (1|7) (0|7) (1|6) (0|6) (3|7) (2|7) (3|6) (2|6) |
+     *
+     *  byte - | 14                                              |
+     *  bit  - |   7     6     5     4     3     2     1     0   |
+     *  data - | (7|5) (6|5) (7|4) (6|4) (5|5) (4|5) (5|4) (4|4) |
+     *
+     *  byte - | 15                                              |
+     *  bit  - |   7     6     5     4     3     2     1     0   |
+     *  data - | (5|7) (4|7) (5|6) (4|6) (7|7) (6|7) (7|6) (6|6) |
      * }</pre>
      * <p>
-     * Direction: SERVER -> CLIENT
      *
      * @see DeviceMessage
      */
-    BOARD_COLOR_UPDATE(1),
-
-    /**
-     * Event send from the server to a physical {@link BoardModule} to clear all colors.
-     * <p>
-     * <pre>{@code
-     *  part -  | HEADER   |
-     *  byte -  |  0  - 8  |
-     *  data -  |          |
-     * }</pre>
-     * <p>
-     * Direction: SERVER -> CLIENT
-     *
-     * @see DeviceMessage
-     */
-    BOARD_COLOR_CLEAR(2),
-
-    /**
-     * Event send from the server to a physical {@link BoardModule} when the {@link BoardModule#sendColorUpdate(boolean)} method is called, clears all colors on the board and
-     * replace them with the ones which were set with the {@link BoardModule#setColor(Position, Color)} method before.
-     * <p>
-     * <pre>{@code
-     *  part -  | HEADER   |  DATA                                      |
-     *  byte -  |  0  - 8  | 9      | 10     | 11  | 12  | 13    | 14   |
-     *  data -  |          | count  | column | row | red | green | blue |
-     *                              | repeated count times              |
-     * }</pre>
-     * <p>
-     * Direction: SERVER -> CLIENT
-     *
-     * @see DeviceMessage
-     */
-    BOARD_COLOR_CLEAR_AND_UPDATE(3),
+    BOARD_BOARD_CHANGED(1),
 
 
     /**
-     * Event send from the server to a physical {@link BoardModule} when the {@link BoardModule#sendColorUpdate(boolean)} method is called, clears all colors on the board and
-     * replace them with the ones which were set with the {@link BoardModule#setColor(Position, Color)} method before.
+     * Event send from a board device to the server when a board sensor detects a magnetic field. The following overview shows which colum and row is encoded in which byte of the
+     * message
      * <p>
      * <pre>{@code
-     *  byte - | HEADER   | 9       | 10     | 11     | 12           |
-     *  data - |  0  - 8  | records | column | row    | sensor state |
-     *                              | repeated <records> time        |
-     *  with sensor state
-     *  bit  -  | 7 6 5 4   3     2     1     0      |
-     *  data -  | <empty>   west  south east  north  |
+     *  byte - | HEADER   |
+     *  data - |  0  - 7  |
      *
-     * }</pre>
-     * <p>
-     * Direction: CLIENT -> SERVER
+     *  byte - | 8                                               |
+     *  bit  - |   7     6     5     4     3     2     1     0   |
+     *  data - | (1|0) (1|0) (1|0) (1|0) (0|0) (0|0) (0|0) (0|0) |
+     *  data - | WEST  SOUTH EAST  NORTH WEST  SOUTH EAST  NORTH |
      *
-     * @see DeviceMessage
+     *  byte - | 9                                               |
+     *  bit  - |   7     6     5     4     3     2     1     0   |
+     *  data - | (1|1) (1|1) (1|1) (1|1) (0|1) (0|1) (0|1) (0|1) |
+     *  data - | WEST  SOUTH EAST  NORTH WEST  SOUTH EAST  NORTH |
+     *
+     *  byte - | 10                                              |
+     *  bit  - |   7     6     5     4     3     2     1     0   |
+     *  data - | (3|0) (3|0) (3|0) (3|0) (2|0) (2|0) (2|0) (2|0) |
+     *  data - | WEST  SOUTH EAST  NORTH WEST  SOUTH EAST  NORTH |
+     *
+     *  byte - | 11                                              |
+     *  bit  - |   7     6     5     4     3     2     1     0   |
+     *  data - | (3|1) (3|1) (3|1) (3|1) (2|1) (2|1) (2|1) (2|1) |
+     *  data - | WEST  SOUTH EAST  NORTH WEST  SOUTH EAST  NORTH |
+     *
+     *  byte - | 12                                              |
+     *  bit  - |   7     6     5     4     3     2     1     0   |
+     *  data - | (1|2) (1|2) (1|2) (1|2) (0|2) (0|2) (0|2) (0|2) |
+     *  data - | WEST  SOUTH EAST  NORTH WEST  SOUTH EAST  NORTH |
+     *
+     *  byte - | 13                                              |
+     *  bit  - |   7     6     5     4     3     2     1     0   |
+     *  data - | (1|3) (1|3) (1|3) (1|3) (0|3) (0|3) (0|3) (0|3) |
+     *  data - | WEST  SOUTH EAST  NORTH WEST  SOUTH EAST  NORTH |
+     *
+     *  byte - | 14                                              |
+     *  bit  - |   7     6     5     4     3     2     1     0   |
+     *  data - | (3|2) (3|2) (3|2) (3|2) (2|2) (2|2) (2|2) (2|2) |
+     *  data - | WEST  SOUTH EAST  NORTH WEST  SOUTH EAST  NORTH |
+     *
+     *  byte - | 15                                              |
+     *  bit  - |   7     6     5     4     3     2     1     0   |
+     *  data - | (3|3) (3|3) (3|3) (3|3) (2|3) (2|3) (2|3) (2|3) |
+     *  data - | WEST  SOUTH EAST  NORTH WEST  SOUTH EAST  NORTH |
+     *
+     *  ... I am to lazy, really...but it should be clear how t continue :)
      */
-    BOARD_SENSOR_UPDATE(4);
+    BOARD_EDGE_CHANGED(2);
 
 
     /**

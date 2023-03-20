@@ -59,9 +59,24 @@ public abstract class AbstractGameEventProducer<E extends GameEvent, L extends G
 
     @Override
     public Future<E> waitForEvent() {
+        LOG.debug("Wait for event...");
         var callback = new EventCallback();
         callbacks.add(callback);
         return executor.submit(callback);
+    }
+
+    /**
+     * Informs all registered listeners about the passed events and resolves the registered callbacks. The difference in the handling is that callbacks are removed / cleared after
+     * a one time execution while listeners are permanent until the {@link #removeListener(GameEventListener)} method was called.
+     *
+     * @param event the event to broadcast
+     */
+    protected void broadcastEvent(E event) {
+        LOG.trace("Broadcast event ::= [{}]", event);
+        listenerSet.stream().forEach(listener -> listener.onEvent(event));
+        callbacks.forEach(c -> c.setEvent(event));
+        //callbacks.forEach(c->c.call());
+        callbacks.clear();
     }
 
 }

@@ -1,7 +1,8 @@
-package mro.fantasy.applications.simulator.board;
+package mro.fantasy.applications.simulator.player.controller;
 
 import mro.fantasy.game.devices.discovery.DeviceDiscoveryService;
 import mro.fantasy.game.devices.events.DeviceEventService;
+import mro.fantasy.game.devices.events.impl.UDPDeviceEventServiceImpl;
 import mro.fantasy.game.utils.NetworkConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,18 +20,18 @@ import javax.jmdns.ServiceInfo;
  * Utility class to simulate a device.
  *
  * @author Michael Rodenbuecher
- *
- * @since 2023-03-16
+ * @see UDPDeviceEventServiceImpl
+ * @since 2022-08-13
  */
 
 @Configuration
 @ComponentScan
-public class BoardDeviceSimulator implements CommandLineRunner {
+public class PlayerControllerSimulator implements CommandLineRunner {
 
     /**
      * Logger
      */
-    private static final Logger LOG = LoggerFactory.getLogger(BoardDeviceSimulator.class);
+    private static final Logger LOG = LoggerFactory.getLogger(PlayerControllerSimulator.class);
 
     /**
      * The device ID. For real devices this is the MAC address.
@@ -52,18 +53,18 @@ public class BoardDeviceSimulator implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
+
         JmDNS jmdns = JmDNS.create(networkConfiguration.getAdapterINetAddress());
-        ServiceInfo serviceInfo = ServiceInfo.create(DeviceDiscoveryService.BOARD_MDNS_TYPE, deviceId, networkConfiguration.getEventUDPPort(), "n/a");
+        ServiceInfo serviceInfo = ServiceInfo.create(DeviceDiscoveryService.PLAYER_MDNS_TYPE, deviceId, networkConfiguration.getEventUDPPort(), "n/a");
         jmdns.registerService(serviceInfo);
+
         deviceEventService.start();
 
         LOG.info("");
         LOG.info("---------------------------------------------------------------------------------");
-        LOG.info("APPLICATION SUCCESSFULLY INITIALIZED");
+        LOG.info("APPLICATION SUCCESSFULLY INITIALIZED {}", deviceId.toUpperCase());
         LOG.info("---------------------------------------------------------------------------------");
         LOG.info("");
-
-
 
     }
 
@@ -75,7 +76,7 @@ public class BoardDeviceSimulator implements CommandLineRunner {
      * @param args the passed arguments
      */
     public static void main(String[] args) {
-        SpringApplication.run(BoardDeviceSimulator.class, args);
+        SpringApplication.run(PlayerControllerSimulator.class, args);
     }
 
 

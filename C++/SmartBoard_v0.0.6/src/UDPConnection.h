@@ -1,27 +1,27 @@
-#ifndef UDP_SERVICE_H_
-#define UDP_SERVICE_H_
+#ifndef UDP_CONNECTION_H_
+#define UDP_CONNECTION_H_
 
 #include <Arduino.h>
-#include <WiFi.h>
 #include <ESPmDNS.h>
+#include <WiFi.h>
 #include <WiFiUdp.h>
 
-#define UDP_CALLBACK [](UDPService * udp, uint8_t * data)
+#define UDP_CALLBACK [](UDPConnection * udp, uint8_t * data)
 #define UDP_MESSAGE_REGISTER 0
 #define UDP_MESSAGE_CLEAR_COLORS 1
 
-class UDPService;
+class UDPConnection;
 
 /**
  * Update function that is triggered when a sensor state has changed.
  */
-typedef void (*MessageHandlerFunction)(UDPService *udp, uint8_t *data);
+typedef void (*MessageHandlerFunction)(UDPConnection *udp, uint8_t *data);
 
 /**
  * @brief service that establishes a connection to the server via UDP. Uses the MDNS service to enable discovery between the device and the server. Every device
  * has exactly one server (the main game server) to which it is connected.
  */
-class UDPService {
+class UDPConnection {
 
   public:
     /**
@@ -30,21 +30,20 @@ class UDPService {
      * @param   mdnsName the MDNS service name that is used by this device
      * @param   udpPort  the UDP port that is used by this device
      */
-    UDPService(const char *mdnsName, uint16_t udpPort);
+    UDPConnection(const char *mdnsName, uint16_t udpPort);
 
     /**
-     * @brief Registers the passed funtion to be executed upon reception of an incoming message for the given type
-     * @param  eventType the event type (byte 8 in the message specification)
-     * @param function the code to execute when the message was received
+     * @brief logic to handle incoming packets
+     * @param  packet the data to handle
      */
-    void on(uint8_t eventType, MessageHandlerFunction function);
+    virtual void handleMessage(uint8_t *packet) = 0;
 
     /**
      * Checks if a new UDP package was received and handles the content.
      */
-    void handleUDP();
+    void update();
 
-  private:
+  protected:
     /**
      *  the UDP connection to receive and send data from and to the server.
      */
@@ -64,11 +63,6 @@ class UDPService {
      * the UDP port that is used by this device
      */
     uint16_t _udpPort;
-
-    /**
-     * Reserve space for the first ten event types to register message handler.
-     */
-    MessageHandlerFunction _handler[10];
 };
 
 #endif

@@ -23,16 +23,18 @@ public class AudioDemoApplication implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        service.playSync("Example", "welcome", Locale.ENGLISH, new AudioCommunicationService.AudioVariable() {
-            @Override
-            public String getAudioBundle() {
-                return "Character Names";
-            }
-
-            @Override
-            public String getAudioKey() {
-                return "riskar";
-            }
-        });
+        service.loadResources();
+        service.playSync("Board Setup", "board.setup.tutorial.1", Locale.ENGLISH);
+        // service.playSync("Example", "welcome", Locale.ENGLISH, new AudioCommunicationService.AudioVariable() {
+        //     @Override
+        //     public String getAudioBundle() {
+        //         return "Character Names";
+        //     }
+        //
+        //     @Override
+        //     public String getAudioKey() {
+        //         return "riskar";
+        //     }
+        // });
     }
 }

@@ -1,7 +1,7 @@
 
-#include <UDPService.h>
+#include <UDPConnection.h>
 
-UDPService::UDPService(const char *mdnsName, uint16_t udpPort) : _mdnsName(mdnsName), _udpPort(udpPort) {
+UDPConnection::UDPConnection(const char *mdnsName, uint16_t udpPort) : _mdnsName(mdnsName), _udpPort(udpPort) {
 
     // Setup MDNS for automatic discovery of the board.
     // ----------------------------------------------------------------------------
@@ -30,27 +30,18 @@ UDPService::UDPService(const char *mdnsName, uint16_t udpPort) : _mdnsName(mdnsN
     }
 };
 
-void UDPService::handleUDP() {
+void UDPConnection::update() {
 
-    //MDNS.update();
+     //MDNS.update();
 
     uint16_t packetSize = _udp->parsePacket();
 
     if (packetSize) {
 
-        Serial.printf("Received %d bytes from %s\n", packetSize, _udp->remoteIP().toString().c_str());
-        Serial.println("");
+        _udp->read(incomingPacket, packetSize); // store the data in the buffer shared buffer for the connection
 
-        uint8_t packet[packetSize];
+        Serial.printf("Received %d bytes from %s with message type ::= [%d]\n", packetSize, _udp->remoteIP().toString().c_str(), incomingPacket[0]);
 
-        _udp->read(packet, packetSize);
-
-        
-        Serial.printf("Received message of type ::= [%d]\n", packet[0]);
-
-        // handle the message if a corresponding handler was defined...otherwise endup in memory areas that will destroy the programm
-        _handler[packet[0]](this, packet);
+        handleMessage(incomingPacket);
     }
 };
-
-void UDPService::on(uint8_t eventType, MessageHandlerFunction function) { _handler[eventType] = function; };

@@ -40,16 +40,16 @@ public class PlanDemoApplication implements CommandLineRunner {
 
         ASCIIPlanRenderer renderer = new ASCIIPlanRenderer();
 
-        Plan origPlan = library.getPlanLibrary().getById("BG001");
+        Plan origPlan = library.getPlanLibrary().getById("BG002");
         Plan changedPlan = origPlan.copy();
 
-        changedPlan.remove(origPlan.getTiles(new Position(4, 1)).get(0));
-        changedPlan.assign(library.getById("BGT006"), new Position(3, 5), TileRotation.DEGREE_180);
-
-        System.out.println(deltaService.calculateChange(origPlan, changedPlan));
+        // changedPlan.remove(origPlan.getTiles(new Position(4, 1)).get(0));
+        // changedPlan.assign(library.getById("BGT006"), new Position(3, 5), TileRotation.DEGREE_180);
+        //
+        // System.out.println(deltaService.calculateChange(origPlan, changedPlan));
 
         renderer.render(origPlan);
-        renderer.render(changedPlan);
+        // renderer.render(changedPlan);
 
 
 

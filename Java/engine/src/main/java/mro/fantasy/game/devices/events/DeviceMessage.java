@@ -1,5 +1,6 @@
 package mro.fantasy.game.devices.events;
 
+import com.google.common.io.BaseEncoding;
 import mro.fantasy.game.devices.impl.AbstractMessage;
 import mro.fantasy.game.devices.impl.DeviceType;
 import mro.fantasy.game.utils.Condition;
@@ -66,7 +67,7 @@ public class DeviceMessage extends AbstractMessage {
 
         Condition.of(datagram.length > 8).ifTrue(() -> this.data = Arrays.copyOfRange(datagram, 8, datagram.length));  // data
 
-        this.deviceId = new String(Arrays.copyOfRange(datagram, 0, 6));
+        this.deviceId = BaseEncoding.base16().encode(Arrays.copyOfRange(datagram, 0, 6));
 
         this.deviceType = DeviceType.fromInteger(datagram[6]);                                                              // deviceType
         this.eventId = Byte.toUnsignedInt(datagram[7]);                                                                     // eventId
@@ -80,13 +81,15 @@ public class DeviceMessage extends AbstractMessage {
 
     /**
      * Creates a new message from the passed UDP datagram
+     *
      * @param datagram the raw data
+     *
      * @return the new message
      */
     public static DeviceMessage parse(byte[] datagram) {
         return new DeviceMessage(datagram);
     }
-    
+
     // /**
     //  * Creates a data package from the given arguments.
     //  *
@@ -154,6 +157,31 @@ public class DeviceMessage extends AbstractMessage {
      */
     public byte[] getRaw() {
         return raw;
+    }
+
+    /**
+     * Creates a more detailed message than the {@link #toString()} method by adding the raw byte data to the result for debugging purposes. Please keep in mind that the result
+     * String maybe very long. The raw data is converted to an unsigned byte value to make the result human-readable, specially because the device side is written in C / C++ and
+     * the handling there is based on unsigned 8 bit values.
+     *
+     * @return the detailed string
+     */
+    public String toDetailedString() {
+        String s = "[";
+        for (int i = 0; i < raw.length; i++) {
+            s += Byte.toUnsignedInt(raw[i]);
+            if (i < raw.length - 1) {
+                s += ", ";
+            }
+        }
+        s += "]";
+
+        return "DeviceDataPackage{" +
+                       "deviceType=" + deviceType +
+                       ", deviceId='" + deviceId + '\'' +
+                       ", eventId=" + DeviceMessageType.fromID(eventId) +
+                       ", raw=" + s +
+                       '}';
     }
 
     @Override

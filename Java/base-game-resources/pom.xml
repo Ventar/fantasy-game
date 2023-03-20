@@ -43,6 +43,7 @@
                 <argument>${project.basedir}/src/main/resources/mp3/tiles_base_en.yaml</argument>
                 <argument>${project.basedir}/src/main/resources/mp3/character_names_en.yaml</argument>
                 <argument>${project.basedir}/src/main/resources/mp3/example_en.yaml</argument>
+                <argument>${project.basedir}/src/main/resources/mp3/board_setup_en.yaml</argument>
               </arguments>
             </configuration>
           </plugin>

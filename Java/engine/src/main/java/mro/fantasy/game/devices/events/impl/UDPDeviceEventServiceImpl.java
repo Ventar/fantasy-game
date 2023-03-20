@@ -1,8 +1,8 @@
 package mro.fantasy.game.devices.events.impl;
 
-import mro.fantasy.game.devices.events.DeviceMessage;
 import mro.fantasy.game.devices.events.DeviceEventHandler;
 import mro.fantasy.game.devices.events.DeviceEventService;
+import mro.fantasy.game.devices.events.DeviceMessage;
 import mro.fantasy.game.engine.events.impl.EventThreadPool;
 import mro.fantasy.game.utils.NetworkConfiguration;
 import mro.fantasy.game.utils.ServiceThread;
@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -38,8 +39,7 @@ public class UDPDeviceEventServiceImpl extends ServiceThread implements DeviceEv
     /**
      * Event handler which are interested in incoming events from devices.
      */
-    @Autowired
-    private List<DeviceEventHandler> eventHandler;
+    private final List<DeviceEventHandler> eventHandler = new ArrayList<>();
 
     /**
      * Threadpool to handle device related tasks.
@@ -71,10 +71,15 @@ public class UDPDeviceEventServiceImpl extends ServiceThread implements DeviceEv
             LOG.debug("Started service ::= [{}] with ::= [{}] device event handler", getClass().getSimpleName(), eventHandler.size());
 
         } catch (Exception e) {
-            throw new IllegalStateException("Cannot start device event service", e);
+            throw new IllegalStateException("Cannot start device event service: ", e);
         }
 
         LOG.debug("Device event service successfully initialized...");
+    }
+
+    @Override
+    public void addDeviceEventHandler(DeviceEventHandler eventHandler) {
+        this.eventHandler.add(eventHandler);
     }
 
     /**
@@ -94,7 +99,7 @@ public class UDPDeviceEventServiceImpl extends ServiceThread implements DeviceEv
         executor.execute(() -> {
             try {
                 DeviceMessage dataPackage = DeviceMessage.parse(packet.getData());
-                LOG.debug("[{}] - Received device event ::= [{}]", dataPackage.getDeviceId(), dataPackage);
+                LOG.debug("[{}] - Received device event ::= [{}]", dataPackage.getDeviceId(), dataPackage.toDetailedString());
 
                 eventHandler.forEach(handler -> handler.handle(dataPackage));    // offer the event to all registered event handler.
             } catch (Exception e) {

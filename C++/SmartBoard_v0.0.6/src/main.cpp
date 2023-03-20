@@ -1,17 +1,14 @@
 #include <Arduino.h>
+#include <Board.h>
 #include <CustomNeoPixel.h>
 #include <CustomWiFiManager.h>
-#include <SensorModule.h>
-#include <UDPService.h>
+#include <UDPMessageHandler.h>
 
-SensorModule *modA;
-SensorModule *modB;
-
-CustomNeoPixel *strip;
+Board *board;
 
 CustomWiFiManager *wifiManager;
 
-UDPService *udpService;
+UDPMessageHandler *udpService;
 IPAddress *gameServerAddress;
 uint16_t gameServerPort;
 
@@ -19,75 +16,13 @@ TaskHandle_t udpTask;
 
 uint32_t currentColor;
 
-void edgeSensorUpdated(SensorModule *mod) {
-    Serial.println("An EDGE sensor update was triggered...");
-    if (currentColor == Color[Orange]) {
-        currentColor = Color[Red];
-    } else {
-        currentColor = Color[Orange];
-    }
-    strip->setColor(currentColor);
-}
-void boardSensorUpdated(SensorModule *mod) {
-    Serial.println("A BOARD sensor update was triggered...");
-    if (currentColor == Color[DarkGreen]) {
-        currentColor = Color[LightGreen];
-    } else {
-        currentColor = Color[DarkGreen];
-    }
-    strip->setColor(currentColor);
-}
-void buttonSensorUpdated(SensorModule *mod) {
-    Serial.println("A BUTTON sensor update was triggered...");
-    if (currentColor == Color[DarkBlue]) {
-        currentColor = Color[SkyBlue];
-    } else {
-        currentColor = Color[DarkBlue];
-    }
-
-    strip->setColor(currentColor);
-}
-
-void setupWiFi() {
-
-    Serial.println("Setup WiFi...");
-    strip->setColor(strip->Color(0, 128, 0));
-
-    wifiManager = new CustomWiFiManager(
-        "War Of Elements", [](WiFiManager *wm) { strip->setColor(strip->Color(255, 0, 0)); }, [](WiFiManager *wm) { strip->setColor(strip->Color(0, 0, 0)); });
-
-    modA->setButtonCallback([](SensorModule *mod) { wifiManager->resetSettings(); });
-
-    for (byte i = 0; i < 20; i++) {
-        delay(100);
-        modA->checkIRQ();
-    }
-
-    wifiManager->connect();
-}
-
-void setupUDPMessageHandler() {
-    udpService = new UDPService("sbmodule", 4669);
-
-    udpService->on(
-        UDP_MESSAGE_REGISTER, UDP_CALLBACK {
-            Serial.println("Received REGISTER message...");
-            gameServerAddress = new IPAddress(data[1], data[2], data[3], data[4]);
-            gameServerPort = data[6] | data[5] << 8;
-
-            Serial.printf("Set UDP server address to %s:%d", gameServerAddress->toString().c_str(), gameServerPort);
-        });
-    udpService->on(
-        UDP_MESSAGE_CLEAR_COLORS, UDP_CALLBACK {
-            Serial.println("Received CLEAR_COLOR message...");
-            strip->clear();
-            strip->show();
-        });
-}
+void edgeSensorUpdated();
+void boardSensorUpdated();
+void buttonSensorUpdated();
 
 void UDPTaskCode(void *parameter) {
     for (;;) {
-        udpService->handleUDP();
+        udpService->update();
     }
 }
 
@@ -103,28 +38,16 @@ void setup() {
 
     Wire.begin(17, 16); // Initalize the I2C Bus
 
-    strip = new CustomNeoPixel(32, 22);          // create a new LED strip
-    modA = new SensorModule(&Wire, 32, 0x70, 0); // create a new sensor module
-    modA->enableEdgeSensors(false);
-    modA->enableBoardSensors(false);
-    //modA->enableButtonSensors(false);
-    modB = new SensorModule(&Wire, 25, 0x70, 1); // create a new sensor module
-    modB->enableEdgeSensors(false);
-    modB->enableBoardSensors(false);
-    //modB->enableButtonSensors(false);
+    board = new Board(&Wire, 22, 0x70, 21, 25, 18, 19);
+    board->setCallback(SensorModule::BOARD, &boardSensorUpdated);
+    board->setCallback(SensorModule::EDGE, &edgeSensorUpdated);
+    board->setCallback(SensorModule::BUTTON, &buttonSensorUpdated);
+    board->strip->setColor(Color[LightGreen]);
 
-    setupWiFi(); // connect to WiFI
+    wifiManager = new CustomWiFiManager(
+        "War Of Elements", [](WiFiManager *wm) { board->strip->setColor(Color[Red]); }, [](WiFiManager *wm) { board->strip->setColor(Color[Black]); });
 
-    // Set the callbackes, this is done in the connectToWifi() method to reset WiFi, so we have to wait until the connection is established before a switch to
-    // the game mode
-    modA->setBoardCallback(&boardSensorUpdated);
-    modA->setEdgeCallback(&edgeSensorUpdated);
-    modA->setButtonCallback(&buttonSensorUpdated);
-    modB->setBoardCallback(&boardSensorUpdated);
-    modB->setEdgeCallback(&edgeSensorUpdated);
-    modB->setButtonCallback(&buttonSensorUpdated);
-
-    setupUDPMessageHandler();
+    udpService = new UDPMessageHandler(board);
 
     Serial.print("setup() running on core ");
     Serial.println(xPortGetCoreID());
@@ -140,13 +63,38 @@ void setup() {
     Serial.println("\n\nStarted Smart Board...");
 }
 
-void loop() {
-    modA->checkIRQ();
-    modB->checkIRQ();
-    delay(5000);
-    Serial.println("\nModule A");
-    modA->dumpPinStatesToSerial();
-    Serial.println("\nModule B");
-    modB->dumpPinStatesToSerial();
-    Serial.println("\n-----------------------------------------------");
+void loop() { board->checkIRQ(); }
+
+void edgeSensorUpdated() {
+    if (currentColor == Color[Orange]) {
+        currentColor = Color[Red];
+    } else {
+        currentColor = Color[Orange];
+    }
+
+    udpService->sendSensorUpdate(SensorModule::EDGE);
+
+    board->strip->setColor(currentColor);
+}
+void boardSensorUpdated() {
+    if (currentColor == Color[DarkGreen]) {
+        currentColor = Color[LightGreen];
+    } else {
+        currentColor = Color[DarkGreen];
+    }
+
+    udpService->sendSensorUpdate(SensorModule::BOARD);
+
+    board->strip->setColor(currentColor);
+}
+void buttonSensorUpdated() {
+    if (currentColor == Color[DarkBlue]) {
+        currentColor = Color[AquaMarine];
+    } else {
+        currentColor = Color[DarkBlue];
+    }
+
+    udpService->sendSensorUpdate(SensorModule::BUTTON);
+
+    board->strip->setColor(currentColor);
 }

@@ -28,6 +28,17 @@ public class AbstractMessage {
     }
 
     /**
+     * Returns the byte ath the given position from the raw data array.
+     *
+     * @param idx the index
+     * @return the data
+     */
+    public byte getData(int idx) {
+        return data[idx];
+    }
+
+
+    /**
      * Returns the ID of the event that is sent by the device. Every device can send different events where the following data in the byte stream depends on the event id that was
      * sent.
      *
